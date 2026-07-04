@@ -1,0 +1,223 @@
+[
+  {
+    "id": 4158,
+    "timestamp": 1782752226060,
+    "status": "completed",
+    "items": [
+      {
+        "id": "mol_katta_oval",
+        "name": "Mol go'shtli somsa",
+        "attribute": "Katta Oval/Cho'ziq",
+        "quantity": 1,
+        "unitPrice": 15000,
+        "totalPrice": 15000
+      }
+    ],
+    "itemsDescription": "Mol go'shtli somsa (Katta Oval/Cho'ziq) - 1 ta",
+    "orderType": "dine-in",
+    "tableNumber": "4",
+    "totalPrice": 15000,
+    "totalQty": 1,
+    "user_id": 5699488314,
+    "username": "B Rakhmonov (@Rakhmonov_0412)"
+  },
+  {
+    "id": 3281,
+    "timestamp": 1782752778180,
+    "status": "completed",
+    "items": [
+      {
+        "id": "mol_standart_uchburchak",
+        "name": "Mol go'shtli somsa",
+        "attribute": "Standart Uchburchak",
+        "quantity": 1,
+        "unitPrice": 8000,
+        "totalPrice": 8000
+      }
+    ],
+    "itemsDescription": "Mol go'shtli somsa (Standart Uchburchak) - 1 ta",
+    "orderType": "saboy",
+    "tableNumber": "",
+    "totalPrice": 8000,
+    "totalQty": 1,
+    "user_id": 0,
+    "username": "Mehmon"
+  },
+  {
+    "id": 7810,
+    "timestamp": 1782753194108,
+    "status": "completed",
+    "items": [
+      {
+        "id": "kartoshka_tortburchak",
+        "name": "Kartoshkali somsa",
+        "attribute": "To'rtburchak",
+        "quantity": 1,
+        "unitPrice": 5000,
+        "totalPrice": 5000
+      }
+    ],
+    "itemsDescription": "Kartoshkali somsa (To'rtburchak) - 1 ta",
+    "orderType": "dine-in",
+    "tableNumber": "7",
+    "totalPrice": 5000,
+    "totalQty": 1,
+    "user_id": 0,
+    "username": "Mehmon"
+  },
+  {
+    "id": 1878,
+    "timestamp": 1782831261625,
+    "status": "pending",
+    "items": [
+      {
+        "id": "mol_standart_uchburchak",
+        "name": "Mol go'shtli somsa",
+        "attribute": "Standart Uchburchak",
+        "quantity": 1,
+        "unitPrice": 8000,
+        "totalPrice": 8000
+      }
+    ],
+    "itemsDescription": "Mol go'shtli somsa (Standart Uchburchak) - 1 ta",
+    "orderType": "dine-in",
+    "tableNumber": "5",
+    "totalPrice": 8000,
+    "totalQty": 1,
+    "user_id": 0,
+    "username": "Mehmon"
+  },
+  {
+    "id": 4131,
+    "timestamp": 1782902745869,
+    "status": "pending",
+    "items": [
+      {
+        "id": "mol_katta_oval",
+        "name": "Mol go'shtli somsa",
+        "attribute": "Katta Oval/Cho'ziq",
+        "quantity": 1,
+        "unitPrice": 15000,
+        "totalPrice": 15000
+      }
+    ],
+    "itemsDescription": "Mol go'shtli somsa (Katta Oval/Cho'ziq) - 1 ta",
+    "orderType": "saboy",
+    "tableNumber": "",
+    "address": "",
+    "latitude": null,
+    "longitude": null,
+    "totalPrice": 15000,
+    "totalQty": 1,
+    "user_id": 5699488314,
+    "username": "B Rakhmonov (@Rakhmonov_0412)",
+    "lang": "uz"
+  },
+  {
+    "id": 1057,
+    "timestamp": 1782902745870,
+    "status": "completed",
+    "items": [
+      {
+        "id": "mol_katta_oval",
+        "name": "Mol go'shtli somsa",
+        "attribute": "Katta Oval/Cho'ziq",
+        "quantity": 1,
+        "unitPrice": 15000,
+        "totalPrice": 15000
+      }
+    ],
+    "itemsDescription": "Mol go'shtli somsa (Katta Oval/Cho'ziq) - 1 ta",
+    "orderType": "saboy",
+    "tableNumber": "",
+    "address": "",
+    "latitude": null,
+    "longitude": null,
+    "totalPrice": 15000,
+    "totalQty": 1,
+    "user_id": 5699488314,
+    "username": "B Rakhmonov (@Rakhmonov_0412)",
+    "lang": "uz",
+    "inventory_deducted": true,
+    "financial_recorded": true
+  },
+  {
+    "id": 3907,
+    "timestamp": 1783003419104,
+    "status": "ready",
+    "items": [
+      {
+        "id": "mol_standart_uchburchak",
+        "name": "Mol go'shtli somsa",
+        "attribute": "Standart Uchburchak",
+        "quantity": 1,
+        "unitPrice": 8000,
+        "totalPrice": 8000
+      },
+      {
+        "id": "fanta_10",
+        "name": "Fanta 1.0L",
+        "attribute": "1.0 L",
+        "quantity": 1,
+        "unitPrice": 11000,
+        "totalPrice": 11000
+      },
+      {
+        "id": "non_patir",
+        "name": "Obi Non",
+        "attribute": "1 ta",
+        "quantity": 1,
+        "unitPrice": 3000,
+        "totalPrice": 3000
+      }
+    ],
+    "itemsDescription": "Mol go'shtli somsa (Standart Uchburchak) - 1 ta, Fanta 1.0L (1.0 L) - 1 ta, Obi Non (1 ta) - 1 ta",
+    "orderType": "dine-in",
+    "tableNumber": "8",
+    "totalPrice": 22000,
+    "totalQty": 3,
+    "user_id": 0,
+    "username": "Zaldagi mijoz (Walk-in)",
+    "inventory_deducted": true
+  },
+  {
+    "id": 3435,
+    "timestamp": 1783003422080,
+    "status": "completed",
+    "items": [
+      {
+        "id": "mol_standart_uchburchak",
+        "name": "Mol go'shtli somsa",
+        "attribute": "Standart Uchburchak",
+        "quantity": 1,
+        "unitPrice": 8000,
+        "totalPrice": 8000
+      },
+      {
+        "id": "fanta_10",
+        "name": "Fanta 1.0L",
+        "attribute": "1.0 L",
+        "quantity": 1,
+        "unitPrice": 11000,
+        "totalPrice": 11000
+      },
+      {
+        "id": "non_patir",
+        "name": "Obi Non",
+        "attribute": "1 ta",
+        "quantity": 1,
+        "unitPrice": 3000,
+        "totalPrice": 3000
+      }
+    ],
+    "itemsDescription": "Mol go'shtli somsa (Standart Uchburchak) - 1 ta, Fanta 1.0L (1.0 L) - 1 ta, Obi Non (1 ta) - 1 ta",
+    "orderType": "dine-in",
+    "tableNumber": "8",
+    "totalPrice": 22000,
+    "totalQty": 3,
+    "user_id": 0,
+    "username": "Zaldagi mijoz (Walk-in)",
+    "inventory_deducted": true,
+    "financial_recorded": true
+  }
+]

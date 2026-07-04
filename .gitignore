@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+tunnel_out.txt
+tunnel_out_serveo.txt
+webapp_url.txt

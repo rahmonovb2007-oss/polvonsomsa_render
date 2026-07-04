@@ -1,0 +1,6 @@
+[
+  { "id": "admin", "name": "Bakhrom Polvon (Admin)", "role": "admin", "pin": "1111" },
+  { "id": "kassir1", "name": "Shahzod (Kassir)", "role": "kassir", "pin": "2222" },
+  { "id": "oshpaz1", "name": "Usta Olim (Bosh Oshpaz)", "role": "oshpaz", "pin": "3333" },
+  { "id": "omborchi1", "name": "Davron (Omborchi)", "role": "omborchi", "pin": "4444" }
+]

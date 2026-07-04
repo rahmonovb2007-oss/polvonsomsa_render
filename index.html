@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>POLVON somsa - Telegram Mini App</title>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    /* Reset & Theme Variable Setup */
+    :root {
+      --bg-color: #FFFFFF;
+      --text-color: #2D2D2D;
+      --text-muted: #7E7E7E;
+      --accent-orange: #FF6B00;
+      --accent-red: #E50000;
+      --card-bg: #FFFFFF;
+      --gray-light: #F6F6F6;
+      --gray-border: #EEEEEE;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 16px 32px rgba(255, 107, 0, 0.1);
+      --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --font-family-title: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-family-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Telegram Theme Integration */
+    body.tg-theme {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    body {
+      font-family: var(--font-family-body);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      overflow-x: hidden;
+      overflow-y: auto;
+      line-height: 1.5;
+      padding-bottom: 90px; /* Space for bottom navigation */
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, h5 {
+      font-family: var(--font-family-title);
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    /* App Container & Tab Views */
+    .app-container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 12px;
+      position: relative;
+    }
+
+    .tab-content {
+      display: none;
+      opacity: 0;
+      transform: translate3d(0, 8px, 0);
+      transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+    }
+
+    .tab-content.active {
+      display: block;
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    /* --- BRAND HEADER COMPONENT --- */
+    .brand-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 4px 16px 4px;
+      border-bottom: 1px solid var(--gray-light);
+      margin-bottom: 16px;
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo-container {
+      position: relative;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
+      padding: 2px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-logo {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #FFF;
+    }
+
+    .brand-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .brand-name span {
+      color: var(--accent-orange);
+    }
+
+    .brand-contact {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 2px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .contact-item svg {
+      width: 11px;
+      height: 11px;
+      fill: var(--accent-orange);
+    }
+
+    /* --- CATEGORY TABS SWITCHER --- */
+    .menu-categories {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 4px 12px 4px;
+      margin-bottom: 8px;
+      scrollbar-width: none;
+    }
+    .menu-categories::-webkit-scrollbar {
+      display: none;
+    }
+    .category-tab {
+      flex: 0 0 auto;
+      padding: 8px 16px;
+      border-radius: 24px;
+      border: 1px solid var(--gray-border);
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .category-tab.active {
+      background-color: var(--accent-orange);
+      color: #ffffff;
+      border-color: var(--accent-orange);
+      box-shadow: 0 4px 12px rgba(255, 126, 0, 0.25);
+    }
+
+    /* --- PRODUCT MATRIX GRID (2 COLUMNS YONMA-YON) --- */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .product-card {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--gray-border);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      position: relative;
+    }
+
+    .product-card:active {
+      transform: scale(0.97);
+    }
+
+    .product-image-container {
+      position: relative;
+      width: 100%;
+      height: 120px;
+      background-color: var(--gray-light);
+      overflow: hidden;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity var(--transition-smooth);
+    }
+
+    /* Geometric badge */
+    .attribute-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.02);
+    }
+
+    .attribute-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: var(--accent-orange);
+    }
+
+    /* Product Info Section */
+    .product-info {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .product-meta {
+      margin-bottom: 8px;
+      min-height: 48px; /* consistent heights for text to align buttons */
+    }
+
+    .product-title {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 2px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .product-attribute-text {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .product-action {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: auto; /* Push button to bottom */
+    }
+
+    .product-price {
+      font-family: var(--font-family-title);
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--accent-orange);
+    }
+
+    /* Add/Quantity Buttons (Full-Width block style for 2-column support) */
+    .btn-add {
+      width: 100%;
+      background-color: var(--gray-light);
+      color: var(--text-color);
+      border: none;
+      height: 34px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: background-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .btn-add:active {
+      background-color: var(--accent-orange);
+      color: white;
+    }
+
+    .quantity-control {
+      display: none;
+      align-items: center;
+      background-color: var(--gray-light);
+      border-radius: 20px;
+      padding: 2px;
+      width: 100%;
+      height: 34px;
+      justify-content: space-between;
+    }
+
+    .quantity-control.active {
+      display: flex;
+      animation: popIn var(--transition-fast) forwards;
+    }
+
+    .qty-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background-color: #FFFFFF;
+      color: var(--text-color);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition-fast);
+    }
+
+    .qty-btn:active {
+      transform: scale(0.85);
+    }
+
+    .qty-btn.minus {
+      color: var(--accent-red);
+    }
+
+    .qty-btn.plus {
+      color: var(--accent-orange);
+    }
+
+    .qty-val {
+      font-family: var(--font-family-title);
+      font-weight: 700;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* --- CART VIEW --- */
+    .cart-section-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cart-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--gray-border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .cart-item-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-grow: 1;
+      max-width: 50%;
+    }
+
+    .cart-item-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: var(--gray-light);
+      flex-shrink: 0;
+    }
+
+    .cart-item-meta {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .cart-item-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cart-item-attribute {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .cart-item-price {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent-orange);
+      margin-top: 1px;
+    }
+
+    .cart-item-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cart-item-right .quantity-control {
+      width: 86px;
+      height: 30px;
+    }
+
+    .cart-item-right .qty-btn {
+      width: 26px;
+      height: 26px;
+      font-size: 14px;
+    }
+
+    .cart-item-total {
+      font-family: var(--font-family-title);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: right;
+      min-width: 76px;
+    }
+
+    /* Cart Empty State */
+    .empty-cart-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 50px 20px;
+      text-align: center;
+    }
+
+    .empty-cart-icon {
+      width: 60px;
+      height: 60px;
+      background-color: var(--gray-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      color: var(--accent-orange);
+    }
+
+    .empty-cart-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .btn-return {
+      background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* --- FULFILLMENT SELECTOR (OLIB KETISH VS SHU YERDA) --- */
+    .order-type-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 8px;
+    }
+
+    .order-type-container {
+      background-color: var(--gray-light);
+      padding: 4px;
+      border-radius: 14px;
+      display: flex;
+      position: relative;
+      margin-bottom: 16px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .order-type-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      z-index: 2;
+      border-radius: 10px;
+      transition: color var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .order-type-btn.active {
+      color: #FFFFFF;
+    }
+
+    .order-type-slider {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      bottom: 4px;
+      width: calc(33.333% - 4px);
+      background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
+      border-radius: 10px;
+      transition: transform var(--transition-smooth);
+      z-index: 1;
+      box-shadow: 0 3px 8px rgba(255, 107, 0, 0.2);
+    }
+
+    .order-type-container.dine-in .order-type-slider {
+      transform: translateX(calc(100% + 2px));
+    }
+
+    .order-type-container.dostavka .order-type-slider {
+      transform: translateX(calc(200% + 4px));
+    }
+
+    /* Conditional Table Selector Layout */
+    .table-selector-container {
+      display: none;
+      opacity: 0;
+      transform: translate3d(0, -8px, 0);
+      transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+      background-color: var(--card-bg);
+      border: 1px solid var(--gray-border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .table-selector-container.show {
+      display: block;
+      animation: slideDownFadeIn var(--transition-smooth) forwards;
+    }
+
+    .table-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .table-select-wrapper {
+      position: relative;
+    }
+
+    .table-select {
+      width: 100%;
+      background-color: var(--gray-light);
+      border: 1px solid var(--gray-border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: var(--font-family-body);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-color);
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .table-select:focus {
+      border-color: var(--accent-orange);
+    }
+
+    .table-select-wrapper::after {
+      content: '';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid var(--text-color);
+      pointer-events: none;
+    }
+
+    /* Checkout Bottom Summary Panel */
+    .cart-summary {
+      background-color: var(--card-bg);
+      border-top: 1px solid var(--gray-light);
+      padding: 12px 4px 4px 4px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .summary-row.total {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-color);
+      margin-top: 10px;
+      border-top: 1px dashed var(--gray-border);
+      padding-top: 10px;
+    }
+
+    .summary-row.total .total-price {
+      color: var(--accent-orange);
+    }
+
+    /* Checkout Exec Button */
+    .btn-checkout {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 14px;
+      font-family: var(--font-family-title);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 16px;
+      box-shadow: var(--shadow-lg);
+      transition: transform var(--transition-fast), opacity var(--transition-fast);
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .btn-checkout:active {
+      transform: scale(0.98);
+    }
+
+    .btn-checkout:disabled {
+      background: #CCCCCC;
+      box-shadow: none;
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* --- PROFILE & ORDER HISTORY --- */
+    .profile-card {
+      background: linear-gradient(135deg, var(--gray-light), #FFFFFF);
+      border: 1px solid var(--gray-border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .profile-avatar-container {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: var(--font-family-title);
+      font-weight: 800;
+      font-size: 20px;
+      overflow: hidden;
+      box-shadow: 0 3px 8px rgba(255, 107, 0, 0.15);
+      flex-shrink: 0;
+    }
+
+    .profile-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    .profile-username {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* History Timeline */
+    .history-title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .order-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .history-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--gray-border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .history-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--gray-light);
+      padding-bottom: 6px;
+    }
+
+    .order-id-date {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .order-id {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .order-date {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Order Status Badges */
+    .status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .status-badge.pending {
+      background-color: #FFF2E6;
+      color: #FF7B00;
+    }
+    .status-badge.preparing {
+      background-color: #FFF9E6;
+      color: #D4A000;
+    }
+    .status-badge.ready {
+      background-color: #E6F9F0;
+      color: #00B360;
+    }
+    .status-badge.completed {
+      background-color: #F6F6F6;
+      color: #7E7E7E;
+    }
+
+    .order-items-detail {
+      font-size: 12px;
+      color: var(--text-color);
+      line-height: 1.4;
+    }
+
+    .history-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .history-order-type {
+      color: var(--text-muted);
+    }
+
+    .history-order-price {
+      font-family: var(--font-family-title);
+      font-weight: 800;
+      color: var(--accent-orange);
+      font-size: 14px;
+    }
+
+    .empty-history {
+      padding: 30px 10px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* --- FIXED BOTTOM NAVIGATION --- */
+    .nav-bar-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-top: 1px solid var(--gray-border);
+      box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.02);
+      z-index: 100;
+    }
+
+    .nav-bar {
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px)) 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      flex: 1;
+      gap: 3px;
+      position: relative;
+      transition: color var(--transition-fast);
+    }
+
+    .nav-item.active {
+      color: var(--accent-orange);
+    }
+
+    .nav-icon-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      fill: none;
+      transition: transform var(--transition-fast);
+    }
+
+    .nav-item.active svg {
+      transform: scale(1.1);
+      stroke: var(--accent-orange);
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* Cart Badge Count */
+    .cart-badge {
+      position: absolute;
+      top: -5px;
+      right: -7px;
+      background-color: var(--accent-red);
+      color: white;
+      border-radius: 50%;
+      min-width: 15px;
+      height: 15px;
+      font-size: 8px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      border: 1.5px solid white;
+      display: none;
+    }
+
+    .cart-badge.active {
+      display: flex;
+      animation: popIn var(--transition-fast) forwards;
+    }
+
+    /* --- ANIMATIONS --- */
+    @keyframes popIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes slideDownFadeIn {
+      0% { opacity: 0; transform: translate3d(0, -10px, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    .lang-selector-mini {
+      display: flex;
+      gap: 4px;
+      background: var(--gray-light);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--gray-border);
+    }
+
+    .lang-mini-btn {
+      background: none;
+      border: none;
+      font-size: 11px;
+      font-family: var(--font-family-title);
+      font-weight: 800;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .lang-mini-btn.active {
+      background: var(--accent-orange);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main SPA Container -->
+  <div class="app-container">
+
+    <!-- TAB 1: SHOWCASE MENU -->
+    <div id="tab-menu" class="tab-content active">
+      
+      <!-- Brand Header -->
+      <header class="brand-header">
+        <div class="brand-left">
+          <div class="brand-logo-container">
+            <!-- Bulletproof fallback for logo images (.png or .jpg) -->
+            <img class="brand-logo" src="assets/logo.jpg" alt="POLVON somsa">
+          </div>
+          <div class="brand-info">
+            <h1 class="brand-name">POLVON <span>somsa</span></h1>
+            <div class="brand-contact">
+              <a href="tel:+998951080093" class="contact-item">
+                <svg viewBox="0 0 24 24"><path d="M6.62,10.79C8.06,13.62 10.38,15.93 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z"/></svg>
+                +998 95 108 00 93
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="brand-right">
+          <div class="lang-selector-mini">
+            <button class="lang-mini-btn active" id="btn-lang-uz" onclick="changeLanguage('uz')">UZ</button>
+            <button class="lang-mini-btn" id="btn-lang-ru" onclick="changeLanguage('ru')">RU</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Category Filter Tabs -->
+      <div class="menu-categories" id="menu-categories-container"></div>
+
+      <!-- Products Matrix -->
+      <section class="menu-grid" id="products-menu-grid">
+        <!-- Rendered dynamically by script -->
+      </section>
+
+    </div>
+
+    <!-- TAB 2: SHOPPING CART -->
+    <div id="tab-cart" class="tab-content">
+      <h2 class="cart-section-title" id="lbl-cart-title">
+        <svg style="width: 22px; height: 22px; stroke: var(--text-color); stroke-width: 2.2; fill: none;" viewBox="0 0 24 24">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        Sizning buyurtmangiz
+      </h2>
+
+      <!-- Active Cart Items -->
+      <div id="cart-active-container">
+        <div class="cart-list" id="cart-items-list">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Fulfillment Order Type Select (Saboy vs Dine-in vs Dostavka) -->
+        <h3 class="order-type-title" id="lbl-order-type">Buyurtma turi:</h3>
+        <div class="order-type-container" id="order-type-toggle" style="grid-template-columns: repeat(3, 1fr); display: grid;">
+          <div class="order-type-slider"></div>
+          <button class="order-type-btn active" id="btn-type-saboy" onclick="setOrderType('saboy')">
+            Olib ketish (Saboy)
+          </button>
+          <button class="order-type-btn" id="btn-type-dine" onclick="setOrderType('dine-in')">
+            Shu yerda
+          </button>
+          <button class="order-type-btn" id="btn-type-dostavka" onclick="setOrderType('dostavka')">
+            Yetkazib berish
+          </button>
+        </div>
+
+        <!-- Conditional Table Selector Dropdown -->
+        <div class="table-selector-container" id="table-selector">
+          <label class="table-label" for="select-table-number" id="lbl-select-table">Stol raqamini tanlang:</label>
+          <div class="table-select-wrapper">
+            <select class="table-select" id="select-table-number">
+              <option value="" disabled selected id="opt-table-placeholder">-- Stol tanlash --</option>
+              <!-- JS will fill options Table 1 to 20 -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Conditional Delivery Address & Geolocation Selector -->
+        <div class="table-selector-container" id="delivery-selector">
+          <label class="table-label" for="input-delivery-address" id="lbl-delivery-address">Yetkazib berish manzili:</label>
+          <div class="form-group" style="margin-bottom:12px;">
+            <input type="text" class="table-select" id="input-delivery-address" placeholder="Ko'cha, uy, kvartira raqami..." style="appearance:none; border-radius:10px;">
+          </div>
+          
+          <button type="button" class="btn-checkout" id="btn-get-geolocation" onclick="fetchGeolocation()" style="background:#444; box-shadow:none; margin-top:8px; padding:10px; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg style="width:16px; height:16px; stroke:currentColor; stroke-width:2.2; fill:none;" viewBox="0 0 24 24">
+              <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span id="lbl-btn-geo">Geolokatsiyani aniqlash</span>
+          </button>
+          <div id="geo-status" style="font-size:11px; font-weight:700; margin-top:6px; text-align:center;"></div>
+        </div>
+
+        <!-- Cart Summary Calculations -->
+        <div class="cart-summary">
+          <div class="summary-row">
+            <span id="lbl-summary-count">Somsalar soni:</span>
+            <span id="summary-total-qty">0 ta</span>
+          </div>
+          <div class="summary-row">
+            <span id="lbl-summary-service">Xizmat ko'rsatish:</span>
+            <span id="summary-service-fee">0 SO'M</span>
+          </div>
+          <div class="summary-row total">
+            <span id="lbl-summary-total">Jami summa:</span>
+            <span class="total-price" id="summary-grand-total">0 SO'M</span>
+          </div>
+        </div>
+
+        <!-- Submit order -->
+        <button class="btn-checkout" id="btn-checkout-execute" onclick="executeCheckout()" disabled>
+          Buyurtma berish
+        </button>
+      </div>
+
+      <!-- Empty Cart Placeholder -->
+      <div id="cart-empty-container" class="empty-cart-state" style="display: none;">
+        <div class="empty-cart-icon">
+          <svg style="width: 28px; height: 28px; stroke: currentColor; stroke-width: 2.5; fill: none;" viewBox="0 0 24 24">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+        </div>
+        <p class="empty-cart-text" id="lbl-empty-cart">Savatchangiz bo'sh. Menyudan issiqqina somsalarni tanlang!</p>
+        <button class="btn-return" id="btn-cart-back-to-menu">Menyuga qaytish</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: USER PROFILE & HISTORY -->
+    <div id="tab-profile" class="tab-content">
+      
+      <!-- TG User Profile Info Card -->
+      <div class="profile-card">
+        <div class="profile-avatar-container" id="user-avatar-placeholder">
+          P
+        </div>
+        <div class="profile-info">
+          <div class="profile-name" id="user-display-name">Polvon Mehmon</div>
+          <div class="profile-username" id="user-telegram-handle">@polvon_somsa_tma</div>
+        </div>
+      </div>
+
+      <!-- Order History Timeline -->
+      <div class="history-title" id="lbl-history-title">
+        <svg style="width: 18px; height: 18px; stroke: var(--text-color); stroke-width: 2.2; fill: none;" viewBox="0 0 24 24">
+          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Buyurtmalar tarixi
+      </div>
+
+      <div class="order-history-list" id="history-items-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FIXED BOTTOM NAVIGATION BAR -->
+  <nav class="nav-bar-container">
+    <div class="nav-bar">
+      
+      <button class="nav-item active" id="nav-btn-menu">
+        <div class="nav-icon-wrapper">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+        </div>
+        <span class="nav-label" id="lbl-nav-menu">Menyu</span>
+      </button>
+
+      <button class="nav-item" id="nav-btn-cart">
+        <div class="nav-icon-wrapper">
+          <svg viewBox="0 0 24 24">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <div class="cart-badge" id="cart-badge-count">0</div>
+        </div>
+        <span class="nav-label" id="lbl-nav-cart">Savatcha</span>
+      </button>
+
+      <button class="nav-item" id="nav-btn-profile">
+        <div class="nav-icon-wrapper">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <span class="nav-label" id="lbl-nav-profile">Kabinet</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- Script logic: High performance state manager -->
+  <script>
+    // 1. PRODUCT METRIC DATA SOURCE (Uzbek only)
+    let PRODUCTS = [
+      {
+        id: "qoy_katta_uchburchak",
+        name: "Qo'y go'shtli somsa",
+        attribute: "Katta Uchburchak",
+        attributeDesc: "Tandirda pishgan qo'y go'shtli katta somsa",
+        price: 20000,
+        imageSrc: "assets/qoy_somsa.jpg"
+      },
+      {
+        id: "mol_katta_oval",
+        name: "Mol go'shtli somsa",
+        attribute: "Katta Oval/Cho'ziq",
+        attributeDesc: "Tandirda pishgan mol go'shtli katta somsa",
+        price: 15000,
+        imageSrc: "assets/mol_somsa_oval.jpg"
+      },
+      {
+        id: "mol_orta_tomchi",
+        name: "Mol go'shtli somsa",
+        attribute: "O'rta Tomchi shakli",
+        attributeDesc: "Tomchi shaklidagi nozik mayin go'shtli somsa",
+        price: 10000,
+        imageSrc: "assets/mol_somsa_drop.jpg"
+      },
+      {
+        id: "mol_standart_uchburchak",
+        name: "Mol go'shtli somsa",
+        attribute: "Standart Uchburchak",
+        attributeDesc: "An'anaviy go'shtli klassik somsa",
+        price: 8000,
+        imageSrc: "assets/mol_somsa_triangle.jpg"
+      },
+      {
+        id: "kartoshka_tortburchak",
+        name: "Kartoshkali somsa",
+        attribute: "To'rtburchak",
+        attributeDesc: "Mazzali kartoshkali to'rtburchak somsa",
+        price: 5000,
+        imageSrc: "assets/kartoshka_somsa.jpg"
+      }
+    ];
+
+    function fetchProducts() {
+      fetch("/api/products")
+        .then(response => {
+          if (!response.ok) throw new Error("HTTP error " + response.status);
+          return response.json();
+        })
+        .then(data => {
+          if (data && data.length > 0) {
+            PRODUCTS = data;
+            renderMenu();
+            renderCart();
+          }
+        })
+        .catch(err => {
+          console.warn("Could not load dynamic products, using default local catalog:", err);
+        });
+    }
+
+    // 2. STATE OBJECT
+    let state = {
+      cart: {},           // Format: { productId: quantity }
+      orderType: 'saboy', // 'saboy', 'dine-in', 'dostavka'
+      tableNumber: '',    // Table number
+      address: '',        // Delivery address
+      latitude: null,     // Geolocation lat
+      longitude: null,    // Geolocation lng
+      orderHistory: []    // Loaded from localStorage
+    };
+
+    // Initialize Telegram WebApp variables
+    let tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      
+      if (tg.themeParams && tg.themeParams.bg_color) {
+        document.body.classList.add('tg-theme');
+      }
+    }
+
+    // --- LANGUAGE LOCALIZATION ENGINE ---
+    const LANG_STRINGS = {
+      uz: {
+        "brand-subtitle": "Eng mazali tandir somsalar",
+        "nav-menu": "Menyu",
+        "nav-cart": "Savatcha",
+        "nav-profile": "Kabinet",
+        "cart-title": "Sizning buyurtmangiz",
+        "order-type": "Buyurtma turi:",
+        "type-saboy": "Olib ketish (Saboy)",
+        "type-dine": "Shu yerda (Zalda)",
+        "type-dostavka": "Yetkazib berish",
+        "select-table": "Stol raqamini tanlang:",
+        "table-option-placeholder": "-- Stol tanlash --",
+        "table-order-placeholder": "Stol raqamini tanlang",
+        "address-label": "Yetkazib berish manzili:",
+        "address-placeholder": "Ko'cha, uy, kvartira raqami...",
+        "btn-geo-label": "📍 Geolokatsiyani aniqlash",
+        "geo-success": "📍 Geolokatsiya aniqlandi!",
+        "geo-fail": "❌ Joylashuvni aniqlash imkoni bo'lmadi. Manzilni yozma kiriting.",
+        "geo-wait": "⏳ Joylashuv aniqlanmoqda...",
+        "items-count-label": "Somsalar soni:",
+        "service-fee-label": "Xizmat ko'rsatish:",
+        "grand-total-label": "Jami summa:",
+        "btn-order": "Buyurtma berish",
+        "btn-order-address-placeholder": "Manzilni kiriting",
+        "empty-cart": "Savatchangiz bo'sh. Menyudan issiqqina somsalarni tanlang!",
+        "btn-back-menu": "Menyuga qaytish",
+        "history-title": "Buyurtmalar tarixi",
+        "empty-history": "Hali buyurtmalar mavjud emas.",
+        "status-pending": "Kutilmoqda",
+        "status-preparing": "Tayyorlanmoqda",
+        "status-ready": "Tayyor",
+        "status-ready-delivery": "Yo'lga chiqdi",
+        "status-completed": "Yakunlandi",
+        "popup-order-success-title": "Buyurtma qabul qilindi!",
+        "popup-order-success-msg": "Buyurtma ID: #{orderId}\nJami summa: {price}\n\nBuyurtmangiz tez orada tayyorlanadi!",
+        "alert-order-fail": "Buyurtma yuborishda xatolik yuz berdi. Internet aloqasini tekshiring.",
+        "btn-add-label": "Qo'shish ➕"
+      },
+      ru: {
+        "brand-subtitle": "Вкуснейшая тандырная самса",
+        "nav-menu": "Меню",
+        "nav-cart": "Корзина",
+        "nav-profile": "Кабинет",
+        "cart-title": "Ваш заказ",
+        "order-type": "Тип заказа:",
+        "type-saboy": "С собой (На вынос)",
+        "type-dine": "В заведении",
+        "type-dostavka": "Доставка 🚚",
+        "select-table": "Выберите номер стола:",
+        "table-option-placeholder": "-- Выбрать стол --",
+        "table-order-placeholder": "Выберите номер стола",
+        "address-label": "Адрес доставки:",
+        "address-placeholder": "Улица, дом, номер квартиры...",
+        "btn-geo-label": "📍 Определить геопозицию",
+        "geo-success": "📍 Геопозиция определена!",
+        "geo-fail": "❌ Не удалось определить локацию. Введите адрес вручную.",
+        "geo-wait": "⏳ Определение геопозиции...",
+        "items-count-label": "Кол-во самсы:",
+        "service-fee-label": "Обслуживание:",
+        "grand-total-label": "Итоговая сумма:",
+        "btn-order": "Заказать",
+        "btn-order-address-placeholder": "Введите адрес",
+        "empty-cart": "Ваша корзина пуста. Выберите горячую самсу из меню!",
+        "btn-back-menu": "Вернуться в меню",
+        "history-title": "История заказов",
+        "empty-history": "Заказов пока нет.",
+        "status-pending": "В ожидании",
+        "status-preparing": "Готовится",
+        "status-ready": "Готов",
+        "status-ready-delivery": "В пути",
+        "status-completed": "Завершен",
+        "popup-order-success-title": "Заказ принят!",
+        "popup-order-success-msg": "ID заказа: #{orderId}\nИтоговая сумма: {price}\n\nВаш заказ скоро будет готов!",
+        "alert-order-fail": "Произошла ошибка при отправке заказа. Проверьте интернет-соединение.",
+        "btn-add-label": "Добавить ➕"
+      }
+    };
+
+    let currentLanguage = 'uz';
+    let selectedCategory = 'all';
+
+    function changeLanguage(lang) {
+      currentLanguage = lang;
+      localStorage.setItem('polvon_somsa_lang', lang);
+      
+      // Update language mini switcher buttons
+      document.getElementById("btn-lang-uz").classList.toggle("active", lang === 'uz');
+      document.getElementById("btn-lang-ru").classList.toggle("active", lang === 'ru');
+      
+      applyLanguage(lang);
+      
+      // Re-render
+      renderMenu();
+      renderCart();
+      renderHistory();
+      updateCartBadge();
+    }
+
+    function applyLanguage(lang) {
+      const strings = LANG_STRINGS[lang];
+      if (!strings) return;
+      
+      // Update texts
+      const brandSub = document.getElementById("brand-subtitle");
+      if (brandSub) brandSub.innerText = strings["brand-subtitle"];
+      
+      document.getElementById("lbl-nav-menu").innerText = strings["nav-menu"];
+      document.getElementById("lbl-nav-cart").innerText = strings["nav-cart"];
+      document.getElementById("lbl-nav-profile").innerText = strings["nav-profile"];
+      
+      document.getElementById("lbl-cart-title").innerHTML = `
+        <svg style="width: 22px; height: 22px; stroke: var(--text-color); stroke-width: 2.2; fill: none;" viewBox="0 0 24 24">
+          <circle cx="9" cy="21" r="1"/>
+          <circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        ${strings["cart-title"]}
+      `;
+      
+      document.getElementById("lbl-order-type").innerText = strings["order-type"];
+      document.getElementById("btn-type-saboy").innerText = strings["type-saboy"];
+      document.getElementById("btn-type-dine").innerText = strings["type-dine"];
+      document.getElementById("btn-type-dostavka").innerText = strings["type-dostavka"];
+      
+      document.getElementById("lbl-select-table").innerText = strings["select-table"];
+      document.getElementById("opt-table-placeholder").innerText = strings["table-option-placeholder"];
+      document.getElementById("lbl-delivery-address").innerText = strings["address-label"];
+      document.getElementById("input-delivery-address").placeholder = strings["address-placeholder"];
+      
+      // Geo label status check
+      const currentGeoStatus = document.getElementById("geo-status").innerText;
+      if (!currentGeoStatus || currentGeoStatus === LANG_STRINGS.uz["geo-success"] || currentGeoStatus === LANG_STRINGS.ru["geo-success"]) {
+        document.getElementById("geo-status").innerText = state.latitude ? strings["geo-success"] : "";
+      } else if (currentGeoStatus === LANG_STRINGS.uz["geo-fail"] || currentGeoStatus === LANG_STRINGS.ru["geo-fail"]) {
+        document.getElementById("geo-status").innerText = strings["geo-fail"];
+      } else if (currentGeoStatus === LANG_STRINGS.uz["geo-wait"] || currentGeoStatus === LANG_STRINGS.ru["geo-wait"]) {
+        document.getElementById("geo-status").innerText = strings["geo-wait"];
+      }
+      
+      document.getElementById("lbl-btn-geo").innerText = strings["btn-geo-label"];
+      
+      document.getElementById("lbl-summary-count").innerText = strings["items-count-label"];
+      document.getElementById("lbl-summary-service").innerText = strings["service-fee-label"];
+      document.getElementById("lbl-summary-total").innerText = strings["grand-total-label"];
+      
+      document.getElementById("lbl-empty-cart").innerText = strings["empty-cart"];
+      document.getElementById("btn-cart-back-to-menu").innerText = strings["btn-back-menu"];
+      
+      document.getElementById("lbl-history-title").innerHTML = `
+        <svg style="width: 18px; height: 18px; stroke: var(--text-color); stroke-width: 2.2; fill: none;" viewBox="0 0 24 24">
+          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        ${strings["history-title"]}
+      `;
+      
+      validateCheckoutForm();
+      renderCategoryTabs();
+    }
+
+    function renderCategoryTabs() {
+      const container = document.getElementById("menu-categories-container");
+      if (!container) return;
+      
+      const cats = [
+        { id: "all", name: currentLanguage === "uz" ? "Barchasi 📋" : "Все 📋" },
+        { id: "somsa", name: currentLanguage === "uz" ? "Somsalar 🥟" : "Самса 🥟" },
+        { id: "shashlik", name: currentLanguage === "uz" ? "Shashliklar 🍢" : "Шашлык 🍢" },
+        { id: "ichimlik", name: currentLanguage === "uz" ? "Ichimliklar 🥤" : "Напитки 🥤" },
+        { id: "qoshimcha", name: currentLanguage === "uz" ? "Qo'shimchalar 🥗" : "Добавки 🥗" }
+      ];
+      
+      container.innerHTML = "";
+      cats.forEach(c => {
+        const btn = document.createElement("button");
+        btn.className = `category-tab ${selectedCategory === c.id ? "active" : ""}`;
+        btn.innerText = c.name;
+        btn.addEventListener("click", () => {
+          triggerHaptic("light");
+          selectedCategory = c.id;
+          container.querySelectorAll(".category-tab").forEach(tab => {
+            tab.classList.toggle("active", tab.innerText === c.name);
+          });
+          renderMenu();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function initLanguage() {
+      // Load saved language or fall back to TG profile language
+      let savedLang = localStorage.getItem('polvon_somsa_lang');
+      if (!savedLang && tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const userLang = tg.initDataUnsafe.user.language_code;
+        if (userLang === 'ru' || userLang === 'uz') {
+          savedLang = userLang;
+        }
+      }
+      if (!savedLang) savedLang = 'uz';
+      
+      changeLanguage(savedLang);
+    }
+
+    // Geolocation API fetch
+    function fetchGeolocation() {
+      triggerHaptic('medium');
+      const strings = LANG_STRINGS[currentLanguage];
+      const statusDiv = document.getElementById("geo-status");
+      statusDiv.innerText = strings["geo-wait"];
+      statusDiv.style.color = "var(--text-color)";
+      
+      if (!navigator.geolocation) {
+        statusDiv.innerText = strings["geo-fail"];
+        statusDiv.style.color = "var(--accent-red)";
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          state.latitude = position.coords.latitude;
+          state.longitude = position.coords.longitude;
+          statusDiv.innerText = strings["geo-success"];
+          statusDiv.style.color = "var(--accent-green)";
+          triggerHaptic('success');
+          validateCheckoutForm();
+        },
+        (error) => {
+          console.warn("Geoloc error:", error);
+          statusDiv.innerText = strings["geo-fail"];
+          statusDiv.style.color = "var(--accent-red)";
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+
+    // Debounce state updates to maintain 60 FPS
+    let debounceTimer = null;
+    function debounce(callback, delay = 30) {
+      return (...args) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          callback(...args);
+        }, delay);
+      };
+    }
+
+    // Haptic feedback helper
+    function triggerHaptic(type = 'light') {
+      try {
+        if (tg && tg.HapticFeedback) {
+          if (type === 'light') tg.HapticFeedback.impactOccurred('light');
+          else if (type === 'medium') tg.HapticFeedback.impactOccurred('medium');
+          else if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+        }
+      } catch (e) {
+        console.warn("Haptic not supported:", e);
+      }
+    }
+
+    const PRODUCT_TRANSLATIONS = {
+      uz: {
+        "qoy_katta_uchburchak": { name: "Qo'y go'shtli somsa", attribute: "Katta Uchburchak", desc: "Tandirda pishgan qo'y go'shtli katta somsa" },
+        "mol_katta_oval": { name: "Mol go'shtli somsa", attribute: "Katta Oval/Cho'ziq", desc: "Tandirda pishgan mol go'shtli katta somsa" },
+        "mol_orta_tomchi": { name: "Mol go'shtli somsa", attribute: "O'rta Tomchi shakli", desc: "Tomchi shaklidagi nozik mayin go'shtli somsa" },
+        "mol_standart_uchburchak": { name: "Mol go'shtli somsa", attribute: "Standart Uchburchak", desc: "An'anaviy go'shtli klassik somsa" },
+        "kartoshka_tortburchak": { name: "Kartoshkali somsa", attribute: "To'rtburchak", desc: "Mazzali kartoshkali to'rtburchak somsa" },
+        "shashlik_qiyma": { name: "Shashlik Qiyma", attribute: "1 ta", desc: "Mazzali va sershira qiyma shashlik" },
+        "shashlik_burda": { name: "Shashlik Burda", attribute: "1 ta", desc: "Ko'mirda pishgan yumshoq go'shtli burda shashlik" },
+        "choy_qora": { name: "Qora choy", attribute: "Choynak", desc: "Issiqqina damlangan xushbo'y qora choy" },
+        "choy_kok": { name: "Ko'k choy", attribute: "Choynak", desc: "Issiqqina damlangan shifobaxsh ko'k choy" },
+        "cola_05": { name: "Coca-Cola 0.5L", attribute: "0.5 L", desc: "Salqinlantiruvchi Coca-Cola" },
+        "cola_10": { name: "Coca-Cola 1.0L", attribute: "1.0 L", desc: "Salqinlantiruvchi Coca-Cola" },
+        "cola_15": { name: "Coca-Cola 1.5L", attribute: "1.5 L", desc: "Salqinlantiruvchi Coca-Cola" },
+        "pepsi_05": { name: "Pepsi 0.5L", attribute: "0.5 L", desc: "Salqinlantiruvchi Pepsi-Cola" },
+        "pepsi_10": { name: "Pepsi 1.0L", attribute: "1.0 L", desc: "Salqinlantiruvchi Pepsi-Cola" },
+        "pepsi_15": { name: "Pepsi 1.5L", attribute: "1.5 L", desc: "Salqinlantiruvchi Pepsi-Cola" },
+        "fanta_05": { name: "Fanta 0.5L", attribute: "0.5 L", desc: "Salqinlantiruvchi apelsinli Fanta" },
+        "fanta_10": { name: "Fanta 1.0L", attribute: "1.0 L", desc: "Salqinlantiruvchi apelsinli Fanta" },
+        "fanta_15": { name: "Fanta 1.5L", attribute: "1.5 L", desc: "Salqinlantiruvchi apelsinli Fanta" },
+        "non_patir": { name: "Obi Non", attribute: "1 ta", desc: "Issiq va mazali tandir non" },
+        "sous_tomat": { name: "Tomat sous", attribute: "1 portsiya", desc: "Mazzali ziravorli tomat sousi" },
+        "qalampir_achchiq": { name: "Achchiq qalampir", attribute: "1 ta", desc: "Tazalik beruvchi achchiq qalampir" }
+      },
+      ru: {
+        "qoy_katta_uchburchak": { name: "Самса с бараниной", attribute: "Большой Треугольник", desc: "Большая тандырная самса с бараниной" },
+        "mol_katta_oval": { name: "Самса с говядиной", attribute: "Большой Овал", desc: "Большая тандырная самса с говядиной" },
+        "mol_orta_tomchi": { name: "Самса с говядиной", attribute: "Средняя Капля", desc: "Нежная сочная самса в форме капли" },
+        "mol_standart_uchburchak": { name: "Самса с говядиной", attribute: "Стандартный Треугольник", desc: "Классическая самса с мясом" },
+        "kartoshka_tortburchak": { name: "Самса с картошкой", attribute: "Квадратная", desc: "Вкусная квадратная самса с картошкой" },
+        "shashlik_qiyma": { name: "Шашлык Кийма", attribute: "1 шт", desc: "Вкусный и сочный мясной фарш-шашлык" },
+        "shashlik_burda": { name: "Шашлык Кусковой", attribute: "1 шт", desc: "Мягкий кусковой шашлык, зажаренный на углях" },
+        "choy_qora": { name: "Черный чай", attribute: "Чайник", desc: "Горячий ароматный черный чай" },
+        "choy_kok": { name: "Зеленый чай", attribute: "Чайник", desc: "Горячий полезный зеленый чай" },
+        "cola_05": { name: "Coca-Cola 0.5л", attribute: "0.5 л", desc: "Освежающая Coca-Cola" },
+        "cola_10": { name: "Coca-Cola 1.0л", attribute: "1.0 л", desc: "Освежающая Coca-Cola" },
+        "cola_15": { name: "Coca-Cola 1.5л", attribute: "1.5 л", desc: "Освежающая Coca-Cola" },
+        "pepsi_05": { name: "Pepsi 0.5л", attribute: "0.5 л", desc: "Освежающий пепси-кола" },
+        "pepsi_10": { name: "Pepsi 1.0л", attribute: "1.0 л", desc: "Освежающий пепси-кола" },
+        "pepsi_15": { name: "Pepsi 1.5л", attribute: "1.5 л", desc: "Освежающий пепси-кола" },
+        "fanta_05": { name: "Fanta 0.5л", attribute: "0.5 л", desc: "Освежающая апельсиновая Fanta" },
+        "fanta_10": { name: "Fanta 1.0л", attribute: "1.0 л", desc: "Освежающая апельсиновая Fanta" },
+        "fanta_15": { name: "Fanta 1.5л", attribute: "1.5 л", desc: "Освежающая апельсиновая Fanta" },
+        "non_patir": { name: "Оби-Нон", attribute: "1 шт", desc: "Горячая лепешка из тандыра" },
+        "sous_tomat": { name: "Томатный соус", attribute: "1 порция", desc: "Вкусный пикантный томатный соус" },
+        "qalampir_achchiq": { name: "Острый перец", attribute: "1 шт", desc: "Острый стручковый перец для вкуса" }
+      }
+    };
+
+    // Helper functions for formatting prices
+    function formatPrice(num) {
+      if (currentLanguage === 'uz') {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " SO'M";
+      } else {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " СУМ";
+      }
+    }
+
+    // 3. UI RENDERING ENGINE (2-Column Grid Layout)
+    function renderMenu() {
+      const container = document.getElementById("products-menu-grid");
+      if (!container) return;
+      container.innerHTML = "";
+      const strings = LANG_STRINGS[currentLanguage];
+      
+      const filteredProducts = PRODUCTS.filter(p => selectedCategory === 'all' || p.category === selectedCategory);
+      
+      filteredProducts.forEach(product => {
+        const qtyInCart = state.cart[product.id] || 0;
+        
+        const trans = PRODUCT_TRANSLATIONS[currentLanguage][product.id] || {
+          name: product.name,
+          attribute: product.attribute,
+          desc: product.attributeDesc
+        };
+        
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.setAttribute("data-id", product.id);
+        
+        card.innerHTML = `
+          <div class="product-image-container">
+            <span class="attribute-badge">
+              <span class="attribute-dot"></span>
+              ${trans.attribute}
+            </span>
+            <img class="product-image" loading="lazy" src="${product.imageSrc}" alt="${trans.name}">
+          </div>
+          <div class="product-info">
+            <div class="product-meta">
+              <h3 class="product-title">${trans.name}</h3>
+              <p class="product-attribute-text">${trans.desc}</p>
+            </div>
+            <div class="product-action">
+              <span class="product-price">${formatPrice(product.price)}</span>
+              
+              <button class="btn-add" id="btn-add-${product.id}" style="display: ${qtyInCart > 0 ? 'none' : 'flex'};">
+                ${strings["btn-add-label"]}
+              </button>
+              
+              <div class="quantity-control ${qtyInCart > 0 ? 'active' : ''}" id="ctrl-${product.id}">
+                <button class="qty-btn minus" onclick="changeQuantity('${product.id}', -1)">-</button>
+                <span class="qty-val" id="qty-val-${product.id}">${qtyInCart}</span>
+                <button class="qty-btn plus" onclick="changeQuantity('${product.id}', 1)">+</button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        const addBtn = card.querySelector(`#btn-add-${product.id}`);
+        addBtn.addEventListener('click', () => {
+          changeQuantity(product.id, 1);
+        });
+        
+        container.appendChild(card);
+      });
+    }
+
+    // Change Item Quantities
+    function changeQuantity(id, delta) {
+      triggerHaptic('light');
+      
+      const currentQty = state.cart[id] || 0;
+      let newQty = currentQty + delta;
+      
+      if (newQty < 0) newQty = 0;
+      
+      if (newQty === 0) {
+        delete state.cart[id];
+      } else {
+        state.cart[id] = newQty;
+      }
+      
+      // Update DOM values immediately for fine-grained reactivity (60 FPS)
+      const qtyElement = document.getElementById(`qty-val-${id}`);
+      const ctrlElement = document.getElementById(`ctrl-${id}`);
+      const addBtnElement = document.getElementById(`btn-add-${id}`);
+      
+      if (newQty > 0) {
+        if (qtyElement) qtyElement.innerText = newQty;
+        if (ctrlElement) ctrlElement.classList.add('active');
+        if (addBtnElement) addBtnElement.style.display = 'none';
+      } else {
+        if (ctrlElement) ctrlElement.classList.remove('active');
+        if (addBtnElement) addBtnElement.style.display = 'flex';
+      }
+      
+      syncCartStateDebounced();
+    }
+
+    const syncCartStateDebounced = debounce(() => {
+      saveCartToStorage();
+      updateCartBadge();
+      renderCart();
+      validateCheckoutForm();
+    }, 30);
+
+    function saveCartToStorage() {
+      localStorage.setItem('polvon_somsa_cart', JSON.stringify(state.cart));
+    }
+
+    function loadCartFromStorage() {
+      try {
+        const saved = localStorage.getItem('polvon_somsa_cart');
+        if (saved) {
+          state.cart = JSON.parse(saved);
+        }
+      } catch (e) {
+        console.error("Cart load error:", e);
+      }
+    }
+
+    function updateCartBadge() {
+      const badge = document.getElementById("cart-badge-count");
+      let totalItems = 0;
+      for (const id in state.cart) {
+        totalItems += state.cart[id];
+      }
+      
+      if (totalItems > 0) {
+        badge.innerText = totalItems;
+        badge.classList.add('active');
+      } else {
+        badge.classList.remove('active');
+      }
+    }
+
+    // Render Cart Tab View
+    function renderCart() {
+      const listContainer = document.getElementById("cart-items-list");
+      const activeCartContainer = document.getElementById("cart-active-container");
+      const emptyCartContainer = document.getElementById("cart-empty-container");
+      
+      let cartKeys = Object.keys(state.cart);
+      
+      if (cartKeys.length === 0) {
+        activeCartContainer.style.display = "none";
+        emptyCartContainer.style.display = "flex";
+        return;
+      }
+      
+      activeCartContainer.style.display = "block";
+      emptyCartContainer.style.display = "none";
+      listContainer.innerHTML = "";
+      
+      let totalQty = 0;
+      let grandTotal = 0;
+      
+      cartKeys.forEach(prodId => {
+        const product = PRODUCTS.find(p => p.id === prodId);
+        if (!product) return;
+        
+        const qty = state.cart[prodId];
+        const itemTotal = product.price * qty;
+        
+        totalQty += qty;
+        grandTotal += itemTotal;
+        
+        const trans = PRODUCT_TRANSLATIONS[currentLanguage][product.id] || {
+          name: product.name,
+          attribute: product.attribute
+        };
+        
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+        cartItem.innerHTML = `
+          <div class="cart-item-info">
+            <img class="cart-item-img" src="${product.imageSrc}" alt="${trans.name}">
+            <div class="cart-item-meta">
+              <span class="cart-item-title">${trans.name}</span>
+              <span class="cart-item-attribute">${trans.attribute}</span>
+              <span class="cart-item-price">${formatPrice(product.price)}</span>
+            </div>
+          </div>
+          <div class="cart-item-right">
+            <div class="quantity-control active">
+              <button class="qty-btn minus" onclick="changeQuantity('${product.id}', -1)">-</button>
+              <span class="qty-val">${qty}</span>
+              <button class="qty-btn plus" onclick="changeQuantity('${product.id}', 1)">+</button>
+            </div>
+            <div class="cart-item-total">${formatPrice(itemTotal)}</div>
+          </div>
+        `;
+        listContainer.appendChild(cartItem);
+      });
+      
+      document.getElementById("summary-total-qty").innerText = currentLanguage === 'uz' ? `${totalQty} ta` : `${totalQty} шт`;
+      
+      let serviceFee = 0;
+      let finalTotal = grandTotal + serviceFee;
+      
+      document.getElementById("summary-service-fee").innerText = formatPrice(serviceFee);
+      document.getElementById("summary-grand-total").innerText = formatPrice(finalTotal);
+    }
+
+    // Set Order Type
+    function setOrderType(type) {
+      triggerHaptic('medium');
+      state.orderType = type;
+      
+      const toggleContainer = document.getElementById("order-type-toggle");
+      const btnSaboy = document.getElementById("btn-type-saboy");
+      const btnDine = document.getElementById("btn-type-dine");
+      const btnDostavka = document.getElementById("btn-type-dostavka");
+      
+      const tableSelector = document.getElementById("table-selector");
+      const deliverySelector = document.getElementById("delivery-selector");
+      
+      // Update UI active buttons
+      btnSaboy.classList.toggle('active', type === 'saboy');
+      btnDine.classList.toggle('active', type === 'dine-in');
+      btnDostavka.classList.toggle('active', type === 'dostavka');
+      
+      // Update slider class
+      toggleContainer.className = "order-type-container";
+      if (type === 'dine-in') {
+        toggleContainer.classList.add('dine-in');
+        tableSelector.classList.add('show');
+        deliverySelector.classList.remove('show');
+      } else if (type === 'dostavka') {
+        toggleContainer.classList.add('dostavka');
+        deliverySelector.classList.add('show');
+        tableSelector.classList.remove('show');
+      } else {
+        tableSelector.classList.remove('show');
+        deliverySelector.classList.remove('show');
+        state.tableNumber = '';
+        document.getElementById("select-table-number").value = "";
+      }
+      
+      validateCheckoutForm();
+    }
+
+    // Checkout form validator
+    function validateCheckoutForm() {
+      const checkoutBtn = document.getElementById("btn-checkout-execute");
+      const strings = LANG_STRINGS[currentLanguage];
+      
+      let cartKeys = Object.keys(state.cart);
+      if (cartKeys.length === 0) {
+        checkoutBtn.disabled = true;
+        checkoutBtn.innerText = strings["btn-order"];
+        return;
+      }
+      
+      if (state.orderType === 'dine-in') {
+        if (!state.tableNumber || state.tableNumber === "") {
+          checkoutBtn.disabled = true;
+          checkoutBtn.innerText = strings["table-order-placeholder"];
+        } else {
+          checkoutBtn.disabled = false;
+          checkoutBtn.innerText = strings["btn-order"];
+        }
+      } else if (state.orderType === 'dostavka') {
+        const addressVal = document.getElementById("input-delivery-address").value.trim();
+        state.address = addressVal;
+        if (!addressVal || addressVal === "") {
+          checkoutBtn.disabled = true;
+          checkoutBtn.innerText = strings["btn-order-address-placeholder"];
+        } else {
+          checkoutBtn.disabled = false;
+          checkoutBtn.innerText = strings["btn-order"];
+        }
+      } else {
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerText = strings["btn-order"];
+      }
+    }
+
+    // Populating table numbers
+    function initTableNumbers() {
+      const select = document.getElementById("select-table-number");
+      select.innerHTML = `<option value="" disabled selected id="opt-table-placeholder">${LANG_STRINGS[currentLanguage]["table-option-placeholder"]}</option>`;
+      for (let i = 1; i <= 20; i++) {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.innerText = `${i}-Stol`;
+        select.appendChild(opt);
+      }
+      
+      select.addEventListener('change', (e) => {
+        state.tableNumber = e.target.value;
+        validateCheckoutForm();
+      });
+
+      // Also listen to address input keyups to update validation state
+      document.getElementById("input-delivery-address").addEventListener('input', (e) => {
+        state.address = e.target.value;
+        validateCheckoutForm();
+      });
+    }
+
+    // 5. PROFILE & ORDER HISTORY ENGINES
+    function initUserProfile() {
+      const displayName = document.getElementById("user-display-name");
+      const userHandle = document.getElementById("user-telegram-handle");
+      const avatarContainer = document.getElementById("user-avatar-placeholder");
+      
+      if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const user = tg.initDataUnsafe.user;
+        const name = [user.first_name, user.last_name].filter(Boolean).join(" ");
+        displayName.innerText = name || "Polvon Mehmon";
+        userHandle.innerText = user.username ? `@${user.username}` : "Telegram Foydalanuvchisi";
+        
+        const firstLetter = (user.first_name ? user.first_name[0] : "P").toUpperCase();
+        
+        if (user.photo_url) {
+          avatarContainer.innerHTML = `<img class="profile-avatar-img" src="${user.photo_url}" alt="Avatar">`;
+        } else {
+          avatarContainer.innerText = firstLetter;
+        }
+      } else {
+        displayName.innerText = "Polvon Mehmon";
+        userHandle.innerText = "@polvon_somsa_mijoz";
+        avatarContainer.innerText = "P";
+      }
+    }
+
+    // Formats a price with correct label based on language
+    function formatPriceLocalized(price) {
+      if (currentLanguage === 'uz') {
+        return price.toLocaleString('uz-UZ') + " SO'M";
+      } else {
+        return price.toLocaleString('ru-RU') + " СУМ";
+      }
+    }
+
+    function saveHistory() {
+      localStorage.setItem('polvon_somsa_history', JSON.stringify(state.orderHistory));
+    }
+
+    function loadHistory() {
+      try {
+        const saved = localStorage.getItem('polvon_somsa_history');
+        if (saved) {
+          state.orderHistory = JSON.parse(saved);
+        }
+      } catch (e) {
+        console.error("History load error:", e);
+      }
+    }
+
+    function renderHistory() {
+      const container = document.getElementById("history-items-container");
+      container.innerHTML = "";
+      const strings = LANG_STRINGS[currentLanguage];
+      
+      if (state.orderHistory.length === 0) {
+        container.innerHTML = `<div class="empty-history">${strings["empty-history"]}</div>`;
+        return;
+      }
+      
+      const sortedHistory = [...state.orderHistory].sort((a, b) => b.timestamp - a.timestamp);
+      
+      sortedHistory.forEach(order => {
+        const card = document.createElement("div");
+        card.className = "history-card";
+        
+        let statusClass = "pending";
+        let statusText = strings["status-pending"];
+        
+        switch (order.status) {
+          case 'pending': statusClass = 'pending'; statusText = strings["status-pending"]; break;
+          case 'preparing': statusClass = 'preparing'; statusText = strings["status-preparing"]; break;
+          case 'ready': 
+            statusClass = 'ready'; 
+            statusText = (order.orderType === 'dostavka') ? strings["status-ready-delivery"] : strings["status-ready"]; 
+            break;
+          case 'completed': statusClass = 'completed'; statusText = strings["status-completed"]; break;
+        }
+        
+        const dateStr = new Date(order.timestamp).toLocaleString(currentLanguage === 'uz' ? 'uz-UZ' : 'ru-RU', {
+          day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+        });
+        
+        let orderTypeDisplay = "";
+        if (order.orderType === 'saboy') {
+          orderTypeDisplay = strings["type-saboy"];
+        } else if (order.orderType === 'dostavka') {
+          orderTypeDisplay = strings["type-dostavka"] + (order.address ? ` (${order.address})` : "");
+        } else {
+          orderTypeDisplay = `${strings["type-dine"]} (${order.tableNumber}-Stol)`;
+        }
+        
+        card.innerHTML = `
+          <div class="history-card-header">
+            <div class="order-id-date">
+              <span class="order-id">${currentLanguage === 'uz' ? 'Buyurtma' : 'Заказ'} #${order.id}</span>
+              <span class="order-date">${dateStr}</span>
+            </div>
+            <span class="status-badge ${statusClass}">${statusText}</span>
+          </div>
+          <div class="order-items-detail">
+            ${order.itemsDescription}
+          </div>
+          <div class="history-card-footer">
+            <span class="history-order-type">
+              ${orderTypeDisplay}
+            </span>
+            <span class="history-order-price">${formatPriceLocalized(order.totalPrice)}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function startRealStatusUpdates() {
+      setInterval(() => {
+        if (state.orderHistory.length === 0) return;
+        
+        const activeIds = state.orderHistory
+          .filter(o => o.status !== 'completed')
+          .map(o => o.id);
+          
+        if (activeIds.length === 0) return;
+        
+        fetch("/api/orders")
+          .then(res => {
+            if (!res.ok) throw new Error();
+            return res.json();
+          })
+          .then(orders => {
+            let changed = false;
+            orders.forEach(srvOrder => {
+              const localIdx = state.orderHistory.findIndex(o => o.id === srvOrder.id);
+              if (localIdx !== -1) {
+                if (state.orderHistory[localIdx].status !== srvOrder.status) {
+                  state.orderHistory[localIdx].status = srvOrder.status;
+                  changed = true;
+                  
+                  if (srvOrder.status === 'ready') {
+                    triggerHaptic('success');
+                    let readyMsg = srvOrder.orderType === 'dostavka' 
+                      ? (currentLanguage === 'uz' ? `Buyurtma #${srvOrder.id} yo'lga chiqdi! 🚚` : `Заказ #${srvOrder.id} в пути! 🚚`)
+                      : (currentLanguage === 'uz' ? `Buyurtma #${srvOrder.id} tayyor bo'ldi. Uni olishingiz mumkin! 🍽` : `Заказ #${srvOrder.id} готов. Можете забрать! 🍽`);
+                      
+                    try {
+                      if (tg) {
+                        tg.showPopup({
+                          title: currentLanguage === 'uz' ? "Tayyor! 🔔" : "Готово! 🔔",
+                          message: readyMsg,
+                          buttons: [{type: "ok"}]
+                        });
+                      } else {
+                        alert(readyMsg);
+                      }
+                    } catch(e) {}
+                  }
+                }
+              }
+            });
+            
+            if (changed) {
+              saveHistory();
+              const historyTab = document.getElementById("tab-profile");
+              if (historyTab.classList.contains("active")) {
+                renderHistory();
+              }
+            }
+          })
+          .catch(err => console.error("Error polling statuses:", err));
+      }, 4000);
+    }
+
+    // 6. CHECKOUT SUBMIT FUNCTION
+    function executeCheckout() {
+      triggerHaptic('success');
+      const strings = LANG_STRINGS[currentLanguage];
+      
+      let cartKeys = Object.keys(state.cart);
+      if (cartKeys.length === 0) return;
+      
+      let totalQty = 0;
+      let totalPrice = 0;
+      let itemsList = [];
+      let itemsDescriptionArr = [];
+      
+      cartKeys.forEach(prodId => {
+        const product = PRODUCTS.find(p => p.id === prodId);
+        if (!product) return;
+        
+        const qty = state.cart[prodId];
+        const itemTotal = product.price * qty;
+        
+        totalQty += qty;
+        totalPrice += itemTotal;
+        
+        itemsList.push({
+          id: prodId,
+          name: product.name,
+          attribute: product.attribute,
+          quantity: qty,
+          unitPrice: product.price,
+          totalPrice: itemTotal
+        });
+        
+        itemsDescriptionArr.push(`${product.name} (${product.attribute}) - ${qty} ta`);
+      });
+      
+      // Gather Telegram User details to attach
+      let userId = 0;
+      let userDisplayName = "Mehmon";
+      if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        userId = tg.initDataUnsafe.user.id;
+        userDisplayName = [tg.initDataUnsafe.user.first_name, tg.initDataUnsafe.user.last_name].filter(Boolean).join(" ");
+        if (tg.initDataUnsafe.user.username) {
+          userDisplayName += ` (@${tg.initDataUnsafe.user.username})`;
+        }
+      }
+
+      // Read address value in case type is dostavka
+      if (state.orderType === 'dostavka') {
+        state.address = document.getElementById("input-delivery-address").value.trim();
+      } else {
+        state.address = '';
+        state.latitude = null;
+        state.longitude = null;
+      }
+      
+      const orderId = Math.floor(1000 + Math.random() * 9000);
+      const newOrder = {
+        id: orderId,
+        timestamp: Date.now(),
+        status: 'pending',
+        items: itemsList,
+        itemsDescription: itemsDescriptionArr.join(", "),
+        orderType: state.orderType,
+        tableNumber: state.tableNumber,
+        address: state.address,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        totalPrice: totalPrice,
+        totalQty: totalQty,
+        user_id: userId,
+        username: userDisplayName,
+        lang: currentLanguage
+      };
+      
+      // POST order to our Python Web Server API
+      fetch("/api/orders/new", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newOrder)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error("Network error");
+        return response.json();
+      })
+      .then(res => {
+        state.orderHistory.push(newOrder);
+        saveHistory();
+        
+        state.cart = {};
+        saveCartToStorage();
+        updateCartBadge();
+        renderMenu();
+        
+        // Reset delivery inputs
+        document.getElementById("input-delivery-address").value = "";
+        document.getElementById("geo-status").innerText = "";
+        state.address = "";
+        state.latitude = null;
+        state.longitude = null;
+        
+        const successMsg = strings["popup-order-success-msg"]
+          .replace("{orderId}", orderId)
+          .replace("{price}", formatPriceLocalized(totalPrice));
+          
+        if (tg) {
+          tg.showPopup({
+            title: strings["popup-order-success-title"],
+            message: successMsg,
+            buttons: [{type: "ok"}]
+          }, () => {
+            switchTab('profile');
+          });
+        } else {
+          alert(`${strings["popup-order-success-title"]}\n\n${successMsg}`);
+          switchTab('profile');
+        }
+      })
+      .catch(err => {
+        console.error("Order submission failed:", err);
+        alert(strings["alert-order-fail"]);
+      });
+    }
+
+    // 7. TAB SYSTEM (0 screen-flash SPA)
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      
+      if (tabName === 'menu') {
+        document.getElementById("tab-menu").classList.add('active');
+        document.getElementById("nav-btn-menu").classList.add('active');
+      } else if (tabName === 'cart') {
+        renderCart();
+        validateCheckoutForm();
+        document.getElementById("tab-cart").classList.add('active');
+        document.getElementById("nav-btn-cart").classList.add('active');
+      } else if (tabName === 'profile') {
+        renderHistory();
+        document.getElementById("tab-profile").classList.add('active');
+        document.getElementById("nav-btn-profile").classList.add('active');
+      }
+      
+      window.scrollTo(0, 0);
+    }
+
+    // 8. EVENT BINDING & STARTUP
+    document.addEventListener("DOMContentLoaded", () => {
+      loadCartFromStorage();
+      loadHistory();
+      
+      renderMenu();
+      fetchProducts();
+      initLanguage(); // Localization first!
+      updateCartBadge();
+      initTableNumbers();
+      initUserProfile();
+      startRealStatusUpdates();
+      
+      document.getElementById("nav-btn-menu").addEventListener('click', () => switchTab('menu'));
+      document.getElementById("nav-btn-cart").addEventListener('click', () => switchTab('cart'));
+      document.getElementById("nav-btn-profile").addEventListener('click', () => switchTab('profile'));
+      
+      document.getElementById("btn-cart-back-to-menu").addEventListener('click', () => switchTab('menu'));
+      document.getElementById("btn-checkout-execute").addEventListener('click', executeCheckout);
+    });
+  </script>
+</body>
+</html>

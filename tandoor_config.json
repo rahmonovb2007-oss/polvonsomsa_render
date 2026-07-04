@@ -1,0 +1,16 @@
+{
+  "somsa_names": {
+    "5000": "Kartoshkali somsa",
+    "8000": "Mol go'shtli o'rta somsa",
+    "10000": "Mol go'shtli katta somsa",
+    "15000": "Qo'y go'shtli o'rta somsa",
+    "20000": "Qo'y go'shtli katta somsa",
+    "25000": "Polvon somsa"
+  },
+  "google_sheets": {
+    "enabled": false,
+    "spreadsheet_id": "",
+    "credentials_file": "google_credentials.json",
+    "sheet_name": "Tandir Hisoboti"
+  }
+}

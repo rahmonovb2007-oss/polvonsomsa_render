@@ -1,0 +1,47 @@
+{
+  "transactions": [
+    {
+      "id": 1,
+      "timestamp": 1782752226060,
+      "type": "income",
+      "amount": 15000,
+      "description": "Buyurtma #4158 yopildi (Dine-in, 4-Stol)"
+    },
+    {
+      "id": 2,
+      "timestamp": 1782752778180,
+      "type": "income",
+      "amount": 8000,
+      "description": "Buyurtma #3281 yopildi (Saboy)"
+    },
+    {
+      "id": 3,
+      "timestamp": 1782753194108,
+      "type": "income",
+      "amount": 5000,
+      "description": "Buyurtma #7810 yopildi (Dine-in, 7-Stol)"
+    },
+    {
+      "id": 1782831182397,
+      "timestamp": 1782831182397,
+      "type": "expense",
+      "amount": 5150,
+      "description": "Xom-ashyo xarid qilindi: Mol go'shti (Beef) (50.0 kg)"
+    },
+    {
+      "id": 1782903239298,
+      "timestamp": 1782903238810,
+      "type": "income",
+      "amount": 15000,
+      "description": "Buyurtma #1057 yopildi (Saboy)"
+    },
+    {
+      "id": 1783003448554,
+      "timestamp": 1783003447960,
+      "type": "income",
+      "amount": 22000,
+      "description": "Buyurtma #3435 yopildi (8-Stol)"
+    }
+  ],
+  "manual_expenses": []
+}

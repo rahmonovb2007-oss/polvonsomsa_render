@@ -1,0 +1,118 @@
+{
+  "stock": {
+    "un": {
+      "name": "Un (Flour)",
+      "qty": 130.5,
+      "unit": "kg",
+      "threshold": 20.0,
+      "price_per_unit": 6500
+    },
+    "gosht_qoy": {
+      "name": "Qo'y go'shti (Mutton)",
+      "qty": 40.0,
+      "unit": "kg",
+      "threshold": 10.0,
+      "price_per_unit": 98000
+    },
+    "gosht_mol": {
+      "name": "Mol go'shti (Beef)",
+      "qty": 80.5,
+      "unit": "kg",
+      "threshold": 12.0,
+      "price_per_unit": 103.0
+    },
+    "piyoz": {
+      "name": "Piyoz (Onion)",
+      "qty": 86.88,
+      "unit": "kg",
+      "threshold": 20.0,
+      "price_per_unit": 3500
+    },
+    "kartoshka": {
+      "name": "Kartoshka (Potato)",
+      "qty": 80.0,
+      "unit": "kg",
+      "threshold": 15.0,
+      "price_per_unit": 4500
+    },
+    "suv": {
+      "name": "Suv (Water)",
+      "qty": 389.5,
+      "unit": "litr",
+      "threshold": 50.0,
+      "price_per_unit": 500
+    },
+    "tuz": {
+      "name": "Tuz va ziravorlar (Salt/Spices)",
+      "qty": 23.02,
+      "unit": "kg",
+      "threshold": 5.0,
+      "price_per_unit": 12000
+    },
+    "xamir": {
+      "name": "Yarim tayyor xamir (Dough)",
+      "qty": 44.82,
+      "unit": "kg",
+      "threshold": 5.0,
+      "price_per_unit": 5000,
+      "is_semi_finished": true
+    },
+    "qiyme_qoy": {
+      "name": "Qo'y go'shtli qiyma (Mutton Filling)",
+      "qty": 10.0,
+      "unit": "kg",
+      "threshold": 3.0,
+      "price_per_unit": 52000,
+      "is_semi_finished": true
+    },
+    "qiyme_mol": {
+      "name": "Mol go'shtli qiyma (Beef Filling)",
+      "qty": 80.81,
+      "unit": "kg",
+      "threshold": 4.0,
+      "price_per_unit": 46000,
+      "is_semi_finished": true
+    },
+    "qiyme_kartoshka": {
+      "name": "Kartoshkali qiyma (Potato Filling)",
+      "qty": 8.0,
+      "unit": "kg",
+      "threshold": 3.0,
+      "price_per_unit": 8000,
+      "is_semi_finished": true
+    }
+  },
+  "logs": [
+    {
+      "timestamp": 1782831144818,
+      "action": "conversion",
+      "description": "Tayyorlandi: Mol go'shtli qiyma (Beef Filling) +69.0 kg. Sarflangan xom-ashyolar: Mol go'shti (Beef): -34.50 kg, Piyoz (Onion): -33.12 kg, Tuz va ziravorlar (Salt/Spices): -1.38 kg"
+    },
+    {
+      "timestamp": 1782831156340,
+      "action": "conversion",
+      "description": "Tayyorlandi: Yarim tayyor xamir (Dough) +30.0 kg. Sarflangan xom-ashyolar: Un (Flour): -19.50 kg, Suv (Water): -10.50 litr, Tuz va ziravorlar (Salt/Spices): -0.60 kg"
+    },
+    {
+      "timestamp": 1782831182395,
+      "action": "purchase",
+      "description": "Omborga yuk kiritildi: Mol go'shti (Beef) +50.0 kg"
+    },
+    {
+      "timestamp": 1782903189577,
+      "action": "deduction",
+      "description": "Buyurtma #1057 tayyorlashga olinganda sarflandi: Yarim tayyor xamir (Dough): -0.080 kg, Mol go'shtli qiyma (Beef Filling): -0.090 kg"
+    },
+    {
+      "timestamp": 1783003421483,
+      "action": "deduction",
+      "description": "Buyurtma #3907 tayyorlashga olinganda sarflandi: Yarim tayyor xamir (Dough): -0.050 kg, Mol go'shtli qiyma (Beef Filling): -0.050 kg"
+    },
+    {
+      "timestamp": 1783003424691,
+      "action": "deduction",
+      "description": "Buyurtma #3435 tayyorlashga olinganda sarflandi: Yarim tayyor xamir (Dough): -0.050 kg, Mol go'shtli qiyma (Beef Filling): -0.050 kg"
+    }
+  ],
+  "waste_logs": []
+}

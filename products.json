@@ -1,0 +1,191 @@
+[
+  {
+    "id": "qoy_katta_uchburchak",
+    "name": "Qo'y go'shtli somsa",
+    "attribute": "Katta Uchburchak",
+    "attributeDesc": "Tandirda pishgan qo'y go'shtli katta somsa",
+    "price": 20000,
+    "imageSrc": "assets/qoy_somsa.jpg",
+    "category": "somsa"
+  },
+  {
+    "id": "mol_katta_oval",
+    "name": "Mol go'shtli somsa",
+    "attribute": "Katta Oval/Cho'ziq",
+    "attributeDesc": "Tandirda pishgan mol go'shtli katta somsa",
+    "price": 15000,
+    "imageSrc": "assets/mol_somsa_oval.jpg",
+    "category": "somsa"
+  },
+  {
+    "id": "mol_orta_tomchi",
+    "name": "Mol go'shtli somsa",
+    "attribute": "O'rta Tomchi shakli",
+    "attributeDesc": "Tomchi shaklidagi nozik mayin go'shtli somsa",
+    "price": 10000,
+    "imageSrc": "assets/mol_somsa_drop.jpg",
+    "category": "somsa"
+  },
+  {
+    "id": "mol_standart_uchburchak",
+    "name": "Mol go'shtli somsa",
+    "attribute": "Standart Uchburchak",
+    "attributeDesc": "An'anaviy go'shtli klassik somsa",
+    "price": 8000,
+    "imageSrc": "assets/mol_somsa_triangle.jpg",
+    "category": "somsa"
+  },
+  {
+    "id": "kartoshka_tortburchak",
+    "name": "Kartoshkali somsa",
+    "attribute": "To'rtburchak",
+    "attributeDesc": "Mazzali kartoshkali to'rtburchak somsa",
+    "price": 5000,
+    "imageSrc": "assets/kartoshka_somsa.jpg",
+    "category": "somsa"
+  },
+  {
+    "id": "shashlik_qiyma",
+    "name": "Shashlik Qiyma",
+    "attribute": "1 skewer",
+    "attributeDesc": "Mazzali va sershira qiyma shashlik",
+    "price": 15000,
+    "imageSrc": "assets/shashlik_qiyma.jpg",
+    "category": "shashlik"
+  },
+  {
+    "id": "shashlik_burda",
+    "name": "Shashlik Burda",
+    "attribute": "1 skewer",
+    "attributeDesc": "Ko'mirda pishgan yumshoq go'shtli burda shashlik",
+    "price": 18000,
+    "imageSrc": "assets/shashlik_burda.jpg",
+    "category": "shashlik"
+  },
+  {
+    "id": "choy_qora",
+    "name": "Qora choy",
+    "attribute": "Teapot",
+    "attributeDesc": "Issiqqina damlangan qora choy",
+    "price": 3000,
+    "imageSrc": "assets/choy.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "choy_kok",
+    "name": "Ko'k choy",
+    "attribute": "Teapot",
+    "attributeDesc": "Issiqqina damlangan shifobaxsh ko'k choy",
+    "price": 3000,
+    "imageSrc": "assets/choy.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "cola_05",
+    "name": "Coca-Cola 0.5L",
+    "attribute": "0.5 L",
+    "attributeDesc": "Salqinlantiruvchi Coca-Cola",
+    "price": 7000,
+    "imageSrc": "assets/cola.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "cola_10",
+    "name": "Coca-Cola 1.0L",
+    "attribute": "1.0 L",
+    "attributeDesc": "Salqinlantiruvchi Coca-Cola",
+    "price": 11000,
+    "imageSrc": "assets/cola.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "cola_15",
+    "name": "Coca-Cola 1.5L",
+    "attribute": "1.5 L",
+    "attributeDesc": "Salqinlantiruvchi Coca-Cola",
+    "price": 14000,
+    "imageSrc": "assets/cola.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "pepsi_05",
+    "name": "Pepsi 0.5L",
+    "attribute": "0.5 L",
+    "attributeDesc": "Salqinlantiruvchi Pepsi",
+    "price": 7000,
+    "imageSrc": "assets/pepsi.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "pepsi_10",
+    "name": "Pepsi 1.0L",
+    "attribute": "1.0 L",
+    "attributeDesc": "Salqinlantiruvchi Pepsi",
+    "price": 11000,
+    "imageSrc": "assets/pepsi.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "pepsi_15",
+    "name": "Pepsi 1.5L",
+    "attribute": "1.5 L",
+    "attributeDesc": "Salqinlantiruvchi Pepsi",
+    "price": 14000,
+    "imageSrc": "assets/pepsi.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "fanta_05",
+    "name": "Fanta 0.5L",
+    "attribute": "0.5 L",
+    "attributeDesc": "Salqinlantiruvchi Fanta",
+    "price": 7000,
+    "imageSrc": "assets/fanta.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "fanta_10",
+    "name": "Fanta 1.0L",
+    "attribute": "1.0 L",
+    "attributeDesc": "Salqinlantiruvchi Fanta",
+    "price": 11000,
+    "imageSrc": "assets/fanta.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "fanta_15",
+    "name": "Fanta 1.5L",
+    "attribute": "1.5 L",
+    "attributeDesc": "Salqinlantiruvchi Fanta",
+    "price": 14000,
+    "imageSrc": "assets/fanta.jpg",
+    "category": "ichimlik"
+  },
+  {
+    "id": "non_patir",
+    "name": "Obi Non",
+    "attribute": "1 ta",
+    "attributeDesc": "Issiq tandir non",
+    "price": 3000,
+    "imageSrc": "assets/non.jpg",
+    "category": "qoshimcha"
+  },
+  {
+    "id": "sous_tomat",
+    "name": "Tomat sous",
+    "attribute": "1 portsiya",
+    "attributeDesc": "Mazzali ziravorli tomat sousi",
+    "price": 2000,
+    "imageSrc": "assets/sous.jpg",
+    "category": "qoshimcha"
+  },
+  {
+    "id": "qalampir_achchiq",
+    "name": "Achchiq qalampir",
+    "attribute": "1 ta",
+    "attributeDesc": "Tazalik beruvchi achchiq qalampir",
+    "price": 2000,
+    "imageSrc": "assets/qalampir.jpg",
+    "category": "qoshimcha"
+  }
+]
