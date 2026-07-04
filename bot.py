@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # CONFIGURATION
 BOT_TOKEN = "7983069353:AAFe7d9h3Ap_5Km84RCKZepdKddKb8Ci0Ws"
-PORT = 8000
+PORT = int(os.environ.get("PORT", 8000))
 ORDERS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "orders.json")
 PRODUCTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "products.json")
 INVENTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "inventory.json")
@@ -823,8 +823,8 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 def run_web_server():
     socketserver.TCPServer.allow_reuse_address = True
     try:
-        with socketserver.TCPServer(("127.0.0.1", PORT), CustomHTTPRequestHandler) as httpd:
-            logger.info(f"Local web server started at http://127.0.0.1:{PORT}")
+        with socketserver.TCPServer(("0.0.0.0", PORT), CustomHTTPRequestHandler) as httpd:
+            logger.info(f"Local web server started at http://0.0.0.0:{PORT}")
             httpd.serve_forever()
     except Exception as e:
         logger.error(f"Error starting local web server: {e}")
