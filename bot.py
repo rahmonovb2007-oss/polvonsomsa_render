@@ -10,6 +10,7 @@ import time
 import datetime
 import http.server
 import socketserver
+import shutil
 from telegram import Update, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, MenuButtonWebApp
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
@@ -96,7 +97,7 @@ MESSAGES = {
 
 
 # Global state for WebApp URL & dynamic thread callbacks
-WEBAPP_URL = None
+WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://polvonsomsa-render.onrender.com/index.html")
 ssh_process = None
 bot_app = None
 bot_loop = None
@@ -866,6 +867,15 @@ def check_webapp_url_file():
 def run_tunnel():
     global WEBAPP_URL, ssh_process
     url_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "webapp_url.txt")
+
+    if WEBAPP_URL and not any(d in WEBAPP_URL for d in ["lhr.life", "serveo.net", "serveousercontent.com"]):
+        logger.info(f"Custom/Render WEBAPP_URL is active ({WEBAPP_URL}), skipping SSH reverse tunnel.")
+        return
+
+    if not shutil.which("ssh"):
+        logger.info("ssh utility not found on system; skipping SSH reverse tunnel.")
+        return
+
     providers = [
         {"cmd": ["ssh", "-tt", "-o", "StrictHostKeyChecking=no", "-R", f"80:127.0.0.1:{PORT}", "nokey@localhost.run"], "name": "localhost.run"},
         {"cmd": ["ssh", "-tt", "-o", "StrictHostKeyChecking=no", "-R", f"80:127.0.0.1:{PORT}", "serveo.net"], "name": "serveo.net"}
@@ -2155,15 +2165,21 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
 def main():
     global bot_app, bot_loop
     
-    # Clear old webapp_url.txt content on startup to prevent stale URL usage
+    # Clear old webapp_url.txt content on startup only if it contains stale tunnel domains
     url_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "webapp_url.txt")
     if os.path.exists(url_file):
         try:
-            with open(url_file, "w", encoding="utf-8") as f:
-                f.write("")
-            logger.info("Base folder: Cleared stale webapp_url.txt on startup.")
+            with open(url_file, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+            if any(d in content for d in ["lhr.life", "serveo.net", "serveousercontent.com"]):
+                with open(url_file, "w", encoding="utf-8") as f:
+                    f.write("")
+                logger.info("Base folder: Cleared stale temporary tunnel webapp_url.txt on startup.")
+            elif content:
+                WEBAPP_URL = content
+                logger.info(f"Using webapp_url from file on startup: {WEBAPP_URL}")
         except Exception as e:
-            logger.error(f"Error clearing webapp_url.txt: {e}")
+            logger.error(f"Error handling webapp_url.txt on startup: {e}")
             
     # Initialize the Telegram Application
     bot_app = Application.builder().token(BOT_TOKEN).build()
