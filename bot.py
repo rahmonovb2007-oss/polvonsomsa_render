@@ -1955,6 +1955,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     admin_url = WEBAPP_URL.replace("index.html", "admin.html")
     is_auth, role, full_name = is_user_authorized(user_id)
 
+    if user_id:
+        try:
+            await context.bot.set_chat_menu_button(
+                chat_id=user_id,
+                menu_button=MenuButtonWebApp(text="🍽 Menyu", web_app=WebAppInfo(url=WEBAPP_URL))
+            )
+        except Exception as e:
+            logger.warning(f"Failed to set chat menu button for {user_id}: {e}")
+
     # Check user language
     user_langs = load_user_languages()
     lang = user_langs.get(str(user_id))
