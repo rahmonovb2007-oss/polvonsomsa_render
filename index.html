@@ -1495,31 +1495,124 @@
       triggerHaptic('medium');
       const strings = LANG_STRINGS[currentLanguage];
       const statusDiv = document.getElementById("geo-status");
+      const addressInput = document.getElementById("input-delivery-address");
+      const geoBtn = document.getElementById("btn-get-geolocation");
+
       statusDiv.innerText = strings["geo-wait"];
       statusDiv.style.color = "var(--text-color)";
-      
-      if (!navigator.geolocation) {
-        statusDiv.innerText = strings["geo-fail"];
-        statusDiv.style.color = "var(--accent-red)";
-        return;
-      }
-      
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          state.latitude = position.coords.latitude;
-          state.longitude = position.coords.longitude;
-          statusDiv.innerText = strings["geo-success"];
-          statusDiv.style.color = "var(--accent-green)";
-          triggerHaptic('success');
+      if (geoBtn) geoBtn.style.opacity = "0.7";
+
+      function onLocationSuccess(lat, lng) {
+        state.latitude = lat;
+        state.longitude = lng;
+        statusDiv.innerText = strings["geo-success"];
+        statusDiv.style.color = "var(--accent-green)";
+        if (geoBtn) geoBtn.style.opacity = "1";
+        triggerHaptic('success');
+
+        // Interim address placeholder so checkout button unlocks immediately
+        if (!addressInput.value || addressInput.value.startsWith("📍")) {
+          addressInput.value = `📍 [${lat.toFixed(5)}, ${lng.toFixed(5)}] Manzil aniqlanmoqda...`;
+          state.address = addressInput.value;
           validateCheckoutForm();
-        },
-        (error) => {
-          console.warn("Geoloc error:", error);
-          statusDiv.innerText = strings["geo-fail"];
-          statusDiv.style.color = "var(--accent-red)";
-        },
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
+        }
+
+        // Reverse geocoding via OpenStreetMap Nominatim
+        const langParam = currentLanguage === 'ru' ? 'ru' : 'uz,ru';
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+          headers: { 'Accept-Language': langParam }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.display_name) {
+            let neatAddress = "";
+            if (data.address) {
+              const road = data.address.road || data.address.pedestrian || data.address.neighbourhood || "";
+              const house = data.address.house_number ? `${data.address.house_number}-uy` : "";
+              const district = data.address.suburb || data.address.district || data.address.city || "";
+              neatAddress = [road, house, district].filter(Boolean).join(", ");
+            }
+            addressInput.value = neatAddress ? `📍 ${neatAddress}` : `📍 ${data.display_name}`;
+          } else {
+            addressInput.value = `📍 Geolokatsiya: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+          }
+          state.address = addressInput.value;
+          validateCheckoutForm();
+        })
+        .catch(() => {
+          addressInput.value = `📍 Geolokatsiya: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+          state.address = addressInput.value;
+          validateCheckoutForm();
+        });
+      }
+
+      function onLocationFail(errorMsg) {
+        if (geoBtn) geoBtn.style.opacity = "1";
+        statusDiv.innerText = errorMsg || strings["geo-fail"];
+        statusDiv.style.color = "var(--accent-red)";
+        triggerHaptic('error');
+      }
+
+      // 1. Try Telegram WebApp native LocationManager (Bot API 7.7+)
+      if (window.Telegram && Telegram.WebApp && Telegram.WebApp.LocationManager) {
+        const lm = Telegram.WebApp.LocationManager;
+        try {
+          lm.init(() => {
+            if (lm.isLocationAvailable) {
+              lm.getLocation((data) => {
+                if (data && data.latitude && data.longitude) {
+                  onLocationSuccess(data.latitude, data.longitude);
+                } else {
+                  tryBrowserGeolocation();
+                }
+              });
+            } else {
+              tryBrowserGeolocation();
+            }
+          });
+          return;
+        } catch (err) {
+          console.warn("Telegram LocationManager exception:", err);
+        }
+      }
+
+      // 2. Fallback to standard browser navigator.geolocation
+      tryBrowserGeolocation();
+
+      function tryBrowserGeolocation() {
+        if (!navigator.geolocation) {
+          onLocationFail(strings["geo-fail"]);
+          return;
+        }
+
+        // Attempt 1: High accuracy with 10s timeout
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            onLocationSuccess(position.coords.latitude, position.coords.longitude);
+          },
+          (err1) => {
+            console.warn("High-accuracy geolocation failed, falling back to network geolocation:", err1);
+            // Attempt 2: Low accuracy (cell tower / wifi) with 15s timeout
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                onLocationSuccess(position.coords.latitude, position.coords.longitude);
+              },
+              (err2) => {
+                console.warn("Low-accuracy geolocation failed:", err2);
+                let message = strings["geo-fail"];
+                if (err2.code === 1) {
+                  message = currentLanguage === 'ru' 
+                    ? "❌ Доступ к геолокации запрещен. Разрешите доступ в настройках."
+                    : "❌ Geolokatsiyaga ruxsat berilmagan. Sozlamalardan ruxsat bering.";
+                }
+                onLocationFail(message);
+              },
+              { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+            );
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+        );
+      }
     }
 
     // Debounce state updates to maintain 60 FPS
@@ -1540,6 +1633,7 @@
           if (type === 'light') tg.HapticFeedback.impactOccurred('light');
           else if (type === 'medium') tg.HapticFeedback.impactOccurred('medium');
           else if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+          else if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
         }
       } catch (e) {
         console.warn("Haptic not supported:", e);
