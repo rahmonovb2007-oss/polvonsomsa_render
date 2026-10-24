@@ -11,6 +11,7 @@ import datetime
 import http.server
 import socketserver
 import shutil
+import urllib.request
 from telegram import Update, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, MenuButtonWebApp
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
@@ -1549,13 +1550,14 @@ async def handle_tandoor_callback(update: Update, context: ContextTypes.DEFAULT_
         reply_keyboard = [[KeyboardButton(text=msg_template["open_menu"].split()[-1], web_app=WebAppInfo(url=WEBAPP_URL))]]
         reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
 
+        menu_text = "🍽 Menyu" if lang == "uz" else "🍽 Меню"
         try:
             await context.bot.set_chat_menu_button(
                 chat_id=chat_id,
-                menu_button=None
+                menu_button=MenuButtonWebApp(text=menu_text, web_app=WebAppInfo(url=WEBAPP_URL))
             )
         except Exception as e:
-            logger.error(f"Error resetting client chat menu button: {e}")
+            logger.error(f"Error setting client chat menu button in language callback: {e}")
 
         await context.bot.send_message(
             chat_id=chat_id,
@@ -2013,13 +2015,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             ]
             reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
 
+            admin_menu_text = "🍽 Menyu" if lang == "uz" else "🍽 Меню"
             try:
                 await context.bot.set_chat_menu_button(
                     chat_id=update.effective_chat.id,
-                    menu_button=None
+                    menu_button=MenuButtonWebApp(text=admin_menu_text, web_app=WebAppInfo(url=WEBAPP_URL))
                 )
             except Exception as e:
-                logger.error(f"Error resetting admin chat menu button: {e}")
+                logger.error(f"Error setting admin chat menu button: {e}")
 
             await update.message.reply_text(
                 text=welcome_text,
@@ -2044,13 +2047,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     reply_keyboard = [[KeyboardButton(text=msg_template["open_menu"].split()[-1], web_app=WebAppInfo(url=WEBAPP_URL))]]
     reply_markup = ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True)
 
+    client_menu_text = "🍽 Menyu" if lang == "uz" else "🍽 Меню"
     try:
         await context.bot.set_chat_menu_button(
             chat_id=update.effective_chat.id,
-            menu_button=None
+            menu_button=MenuButtonWebApp(text=client_menu_text, web_app=WebAppInfo(url=WEBAPP_URL))
         )
     except Exception as e:
-        logger.error(f"Error resetting client chat menu button: {e}")
+        logger.error(f"Error setting client chat menu button: {e}")
 
     await update.message.reply_text(
         text=welcome_text,
@@ -2171,6 +2175,37 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=err_msg
         )
 
+def keep_alive_ping():
+    """Periodically ping Render URL to prevent the service from idling/sleeping on the free tier."""
+    render_url = os.environ.get("RENDER_EXTERNAL_URL", "https://polvonsomsa-render.onrender.com")
+    time.sleep(30)
+    logger.info(f"Keep-alive self-ping background worker initialized for {render_url}")
+    while True:
+        try:
+            req_url = f"{render_url.rstrip('/')}/index.html"
+            req = urllib.request.Request(
+                req_url,
+                headers={"User-Agent": "PolvonSomsaBot-KeepAlive/1.0"}
+            )
+            with urllib.request.urlopen(req, timeout=25) as resp:
+                logger.info(f"Keep-alive self-ping sent to {req_url}, status: {resp.status}")
+        except Exception as e:
+            logger.warning(f"Keep-alive self-ping notice: {e}")
+        time.sleep(480)
+
+async def post_init(application: Application):
+    """Set global default menu button on bot startup."""
+    try:
+        await application.bot.set_chat_menu_button(
+            menu_button=MenuButtonWebApp(
+                text="🍽 Menyu",
+                web_app=WebAppInfo(url=WEBAPP_URL)
+            )
+        )
+        logger.info(f"✨ Default global Telegram menu button initialized to {WEBAPP_URL}")
+    except Exception as e:
+        logger.warning(f"Could not set default menu button in post_init: {e}")
+
 def main():
     global bot_app, bot_loop
     
@@ -2191,11 +2226,15 @@ def main():
             logger.error(f"Error handling webapp_url.txt on startup: {e}")
             
     # Initialize the Telegram Application
-    bot_app = Application.builder().token(BOT_TOKEN).build()
+    bot_app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
     
     # Start Python Web Server in a daemon thread
     server_thread = threading.Thread(target=run_web_server, daemon=True)
     server_thread.start()
+
+    # Start Keep-Alive Ping Thread to prevent Render free-tier sleep
+    keep_alive_thread = threading.Thread(target=keep_alive_ping, daemon=True)
+    keep_alive_thread.start()
     
     # Start Tunnel Thread
     tunnel_thread = threading.Thread(target=run_tunnel, daemon=True)
