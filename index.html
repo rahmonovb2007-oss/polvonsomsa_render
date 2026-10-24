@@ -13,23 +13,27 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-    /* Reset & Theme Variable Setup */
+    /* Reset & Restaurant Culinary Theme Setup */
     :root {
-      --bg-color: #FFFFFF;
-      --text-color: #2D2D2D;
-      --text-muted: #7E7E7E;
-      --accent-orange: #FF6B00;
-      --accent-red: #E50000;
+      --bg-color: #FAF4EB;
+      --text-color: #261B12;
+      --text-muted: #826E5E;
+      --accent-orange: #FF5A00;
+      --accent-gradient: linear-gradient(135deg, #FF6A00 0%, #EE3400 100%);
+      --accent-gold: #E58A00;
+      --accent-red: #D91C1C;
       --card-bg: #FFFFFF;
-      --gray-light: #F6F6F6;
-      --gray-border: #EEEEEE;
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-      --shadow-lg: 0 16px 32px rgba(255, 107, 0, 0.1);
+      --card-border: rgba(220, 120, 40, 0.14);
+      --gray-light: #F4EBE0;
+      --gray-border: #E8DACB;
+      --shadow-sm: 0 4px 12px rgba(120, 50, 10, 0.05);
+      --shadow-md: 0 8px 24px rgba(120, 50, 10, 0.08);
+      --shadow-card: 0 10px 24px rgba(140, 60, 10, 0.07);
+      --shadow-btn: 0 6px 18px rgba(255, 90, 0, 0.32);
       --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
       --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      --font-family-title: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-family-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-family-title: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-family-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     /* Telegram Theme Integration */
@@ -49,11 +53,16 @@
     body {
       font-family: var(--font-family-body);
       background-color: var(--bg-color);
+      background-image: 
+        radial-gradient(circle at 10% 15%, rgba(255, 120, 0, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 85%, rgba(220, 40, 0, 0.04) 0%, transparent 45%),
+        linear-gradient(180deg, #FFF9F3 0%, #FAF3EA 40%, #F3E6D5 100%);
+      background-attachment: fixed;
       color: var(--text-color);
       overflow-x: hidden;
       overflow-y: auto;
       line-height: 1.5;
-      padding-bottom: 90px; /* Space for bottom navigation */
+      padding-bottom: 110px; /* Space for bottom nav & sticky cart */
       -webkit-font-smoothing: antialiased;
     }
 
@@ -89,9 +98,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 4px 4px 16px 4px;
-      border-bottom: 1px solid var(--gray-light);
-      margin-bottom: 16px;
+      padding: 4px 4px 14px 4px;
+      margin-bottom: 8px;
     }
 
     .brand-left {
@@ -105,9 +113,10 @@
       width: 54px;
       height: 54px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
-      padding: 2px;
-      box-shadow: var(--shadow-sm);
+      background: linear-gradient(135deg, #FF6A00, #E11D48);
+      padding: 2.5px;
+      box-shadow: 0 4px 14px rgba(255, 106, 0, 0.35);
+      flex-shrink: 0;
     }
 
     .brand-logo {
@@ -124,22 +133,39 @@
     }
 
     .brand-name {
-      font-size: 19px;
+      font-size: 20px;
       font-weight: 800;
       letter-spacing: -0.5px;
       text-transform: uppercase;
-      line-height: 1.2;
+      line-height: 1.15;
     }
 
     .brand-name span {
-      color: var(--accent-orange);
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-badge-open {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #059669;
+      background: #D1FAE5;
+      padding: 2px 7px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 3px;
+      width: fit-content;
+      box-shadow: 0 1px 4px rgba(5, 150, 105, 0.15);
     }
 
     .brand-contact {
       display: flex;
       flex-direction: column;
       gap: 2px;
-      margin-top: 2px;
+      margin-top: 3px;
     }
 
     .contact-item {
@@ -149,7 +175,7 @@
       font-size: 11px;
       color: var(--text-muted);
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .contact-item svg {
@@ -158,12 +184,103 @@
       fill: var(--accent-orange);
     }
 
+    /* --- RESTAURANT HERO ATMOSPHERE BANNER --- */
+    .restaurant-hero-card {
+      position: relative;
+      background: linear-gradient(135deg, #24160E 0%, #3B1C0B 60%, #4D1F05 100%);
+      color: #FFFFFF;
+      border-radius: 20px;
+      padding: 16px 16px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(50, 20, 5, 0.25);
+      border: 1px solid rgba(255, 140, 50, 0.25);
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(255, 110, 0, 0.5) 0%, transparent 70%);
+      pointer-events: none;
+      filter: blur(20px);
+    }
+
+    .hero-badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #FFD180;
+      margin-bottom: 6px;
+      border: 1px solid rgba(255, 209, 128, 0.2);
+    }
+
+    .live-dot-pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #00E676;
+      box-shadow: 0 0 8px #00E676;
+      animation: pulseGreen 1.8s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.8; }
+    }
+
+    .hero-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .hero-subtitle {
+      font-size: 11px;
+      color: #E0C7B4;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .hero-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .feature-tag {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 150, 50, 0.2);
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #FFE0B2;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
     /* --- CATEGORY TABS SWITCHER --- */
     .menu-categories {
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding: 4px 4px 12px 4px;
+      padding: 4px 2px 12px 2px;
       margin-bottom: 8px;
       scrollbar-width: none;
     }
@@ -172,10 +289,10 @@
     }
     .category-tab {
       flex: 0 0 auto;
-      padding: 8px 16px;
+      padding: 9px 18px;
       border-radius: 24px;
       border: 1px solid var(--gray-border);
-      background-color: var(--card-bg);
+      background-color: #FFFFFF;
       color: var(--text-color);
       font-size: 13px;
       font-weight: 700;
@@ -183,29 +300,31 @@
       transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(100, 40, 10, 0.04);
     }
     .category-tab.active {
-      background-color: var(--accent-orange);
+      background: var(--accent-gradient);
       color: #ffffff;
-      border-color: var(--accent-orange);
-      box-shadow: 0 4px 12px rgba(255, 126, 0, 0.25);
+      border-color: transparent;
+      box-shadow: 0 6px 16px rgba(255, 90, 0, 0.3);
+      transform: translateY(-1px);
     }
 
-    /* --- PRODUCT MATRIX GRID (2 COLUMNS YONMA-YON) --- */
+    /* --- PRODUCT MATRIX GRID (2 COLUMNS) --- */
     .menu-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .product-card {
       background-color: var(--card-bg);
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
-      border: 1px solid var(--gray-border);
-      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-card);
       display: flex;
       flex-direction: column;
       transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -213,14 +332,14 @@
     }
 
     .product-card:active {
-      transform: scale(0.97);
+      transform: scale(0.975);
     }
 
     .product-image-container {
       position: relative;
       width: 100%;
-      height: 120px;
-      background-color: var(--gray-light);
+      height: 135px;
+      background-color: #F8F0E5;
       overflow: hidden;
     }
 
@@ -228,10 +347,39 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: opacity var(--transition-smooth);
+      transition: transform 0.3s ease;
     }
 
-    /* Geometric badge */
+    .product-card:hover .product-image {
+      transform: scale(1.04);
+    }
+
+    .product-image-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 45px;
+      background: linear-gradient(to top, rgba(30, 15, 5, 0.4) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .taste-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: linear-gradient(135deg, #FF6600, #D92300);
+      color: #FFFFFF;
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(220, 50, 0, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      z-index: 2;
+    }
+
     .attribute-badge {
       position: absolute;
       top: 8px;
@@ -239,43 +387,46 @@
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      padding: 4px 8px;
-      border-radius: 20px;
+      padding: 3px 8px;
+      border-radius: 12px;
       font-size: 9px;
       font-weight: 800;
-      color: var(--text-color);
+      color: #2D1E12;
       display: flex;
       align-items: center;
       gap: 4px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-      border: 1px solid rgba(0,0,0,0.02);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border: 1px solid rgba(230, 130, 40, 0.15);
+      z-index: 2;
     }
 
     .attribute-dot {
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background-color: var(--accent-orange);
+      box-shadow: 0 0 4px var(--accent-orange);
     }
 
-    /* Product Info Section */
     .product-info {
-      padding: 10px;
+      padding: 11px;
       display: flex;
       flex-direction: column;
       flex-grow: 1;
+      background: #FFFFFF;
     }
 
     .product-meta {
-      margin-bottom: 8px;
-      min-height: 48px; /* consistent heights for text to align buttons */
+      margin-bottom: 6px;
+      min-height: 44px;
     }
 
     .product-title {
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.3;
-      margin-bottom: 2px;
+      font-size: 13.5px;
+      font-weight: 800;
+      line-height: 1.25;
+      color: var(--text-color);
+      margin-bottom: 3px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -283,59 +434,70 @@
     }
 
     .product-attribute-text {
-      font-size: 10px;
+      font-size: 10.5px;
       color: var(--text-muted);
       font-weight: 500;
-      white-space: nowrap;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
+      min-height: 28px;
+    }
+
+    .product-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      margin: 4px 0 8px 0;
+    }
+
+    .product-price {
+      font-family: var(--font-family-title);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--accent-orange);
     }
 
     .product-action {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      margin-top: auto; /* Push button to bottom */
+      margin-top: auto;
     }
 
-    .product-price {
-      font-family: var(--font-family-title);
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--accent-orange);
-    }
-
-    /* Add/Quantity Buttons (Full-Width block style for 2-column support) */
     .btn-add {
       width: 100%;
-      background-color: var(--gray-light);
-      color: var(--text-color);
+      background: var(--accent-gradient);
+      color: #FFFFFF;
       border: none;
-      height: 34px;
-      border-radius: 20px;
-      font-weight: 700;
+      height: 36px;
+      border-radius: 18px;
+      font-weight: 800;
       font-size: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      transition: background-color var(--transition-fast), color var(--transition-fast);
+      gap: 6px;
+      box-shadow: var(--shadow-btn);
+      transition: all var(--transition-fast);
     }
 
     .btn-add:active {
-      background-color: var(--accent-orange);
-      color: white;
+      transform: scale(0.96);
+      filter: brightness(0.92);
     }
 
     .quantity-control {
       display: none;
       align-items: center;
-      background-color: var(--gray-light);
+      background: #FFF4EB;
+      border: 1px solid rgba(255, 106, 0, 0.25);
       border-radius: 20px;
-      padding: 2px;
+      padding: 2px 4px;
       width: 100%;
-      height: 34px;
+      height: 36px;
       justify-content: space-between;
     }
 
@@ -352,12 +514,12 @@
       background-color: #FFFFFF;
       color: var(--text-color);
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       transition: transform var(--transition-fast);
     }
 
@@ -375,9 +537,123 @@
 
     .qty-val {
       font-family: var(--font-family-title);
-      font-weight: 700;
-      font-size: 13px;
+      font-weight: 800;
+      font-size: 14px;
       text-align: center;
+      color: var(--accent-orange);
+    }
+
+    /* --- FLOATING QUICK CART BAR --- */
+    .floating-quick-cart {
+      position: fixed;
+      bottom: 74px;
+      left: 12px;
+      right: 12px;
+      max-width: 456px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #1C1510 0%, #301708 100%);
+      color: #FFFFFF;
+      border-radius: 18px;
+      padding: 10px 14px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 120, 0, 0.35);
+      z-index: 99;
+      cursor: pointer;
+      animation: slideUpFade 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .floating-quick-cart.active {
+      display: flex;
+    }
+
+    @keyframes slideUpFade {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .quick-cart-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .quick-cart-icon-box {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      background: var(--accent-gradient);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(255, 90, 0, 0.4);
+    }
+
+    .quick-cart-icon-box svg {
+      width: 18px;
+      height: 18px;
+      stroke: white;
+      stroke-width: 2.2;
+      fill: none;
+    }
+
+    .quick-cart-count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #FFFFFF;
+      color: #E11D48;
+      font-size: 9px;
+      font-weight: 800;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #E11D48;
+    }
+
+    .quick-cart-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .quick-cart-title {
+      font-size: 11px;
+      color: #D6C2B4;
+      font-weight: 600;
+    }
+
+    .quick-cart-price {
+      font-size: 15px;
+      font-weight: 800;
+      color: #FFD54F;
+      font-family: var(--font-family-title);
+    }
+
+    .quick-cart-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-gradient);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(255, 90, 0, 0.35);
+    }
+
+    .quick-cart-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      fill: none;
+    }
     }
 
     /* --- CART VIEW --- */
@@ -1013,6 +1289,10 @@
           </div>
           <div class="brand-info">
             <h1 class="brand-name">POLVON <span>somsa</span></h1>
+            <div class="brand-badge-open">
+              <span class="live-dot-pulse"></span>
+              <span id="lbl-brand-open">Ochiq • Qaynoq tandir</span>
+            </div>
             <div class="brand-contact">
               <a href="tel:+998951080093" class="contact-item">
                 <svg viewBox="0 0 24 24"><path d="M6.62,10.79C8.06,13.62 10.38,15.93 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z"/></svg>
@@ -1028,6 +1308,24 @@
           </div>
         </div>
       </header>
+
+      <!-- RESTAURANT ATMOSPHERE HERO BANNER -->
+      <div class="restaurant-hero-card">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+          <div class="hero-badge-live">
+            <span class="live-dot-pulse"></span>
+            <span id="lbl-hero-status">🔥 Tandir qizimoqda • Qaynoq taomlar</span>
+          </div>
+          <h2 class="hero-title" id="lbl-hero-title">POLVON SOMSA & KABOB</h2>
+          <p class="hero-subtitle" id="lbl-hero-sub">Tandirdan hozirgina uzilgan qarsildoq somsa va sershira shashliklar!</p>
+          <div class="hero-features">
+            <span class="feature-tag" id="lbl-hero-tag1">⚡ 30-40 daqiqa</span>
+            <span class="feature-tag" id="lbl-hero-tag2">🥩 100% Halol go'sht</span>
+            <span class="feature-tag" id="lbl-hero-tag3">🥖 Issiq yetkazish</span>
+          </div>
+        </div>
+      </div>
 
       <!-- Category Filter Tabs -->
       <div class="menu-categories" id="menu-categories-container"></div>
@@ -1163,6 +1461,24 @@
 
   </div>
 
+  <!-- FLOATING QUICK CART BAR -->
+  <div id="floating-quick-cart" class="floating-quick-cart" onclick="switchTab('cart')">
+    <div class="quick-cart-left">
+      <div class="quick-cart-icon-box">
+        <svg viewBox="0 0 24 24"><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="quick-cart-count" id="quick-cart-qty">0</span>
+      </div>
+      <div class="quick-cart-info">
+        <span class="quick-cart-title" id="lbl-quick-cart-items">0 ta taom tanlandi</span>
+        <span class="quick-cart-price" id="quick-cart-total">0 SO'M</span>
+      </div>
+    </div>
+    <div class="quick-cart-btn">
+      <span id="lbl-quick-cart-action">Rasmiylashtirish</span>
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+  </div>
+
   <!-- FIXED BOTTOM NAVIGATION BAR -->
   <nav class="nav-bar-container">
     <div class="nav-bar">
@@ -1202,48 +1518,29 @@
 
   <!-- Script logic: High performance state manager -->
   <script>
-    // 1. PRODUCT METRIC DATA SOURCE (Uzbek only)
+    // 1. PRODUCT METRIC DATA SOURCE
     let PRODUCTS = [
-      {
-        id: "qoy_katta_uchburchak",
-        name: "Qo'y go'shtli somsa",
-        attribute: "Katta Uchburchak",
-        attributeDesc: "Tandirda pishgan qo'y go'shtli katta somsa",
-        price: 20000,
-        imageSrc: "assets/qoy_somsa.jpg"
-      },
-      {
-        id: "mol_katta_oval",
-        name: "Mol go'shtli somsa",
-        attribute: "Katta Oval/Cho'ziq",
-        attributeDesc: "Tandirda pishgan mol go'shtli katta somsa",
-        price: 15000,
-        imageSrc: "assets/mol_somsa_oval.jpg"
-      },
-      {
-        id: "mol_orta_tomchi",
-        name: "Mol go'shtli somsa",
-        attribute: "O'rta Tomchi shakli",
-        attributeDesc: "Tomchi shaklidagi nozik mayin go'shtli somsa",
-        price: 10000,
-        imageSrc: "assets/mol_somsa_drop.jpg"
-      },
-      {
-        id: "mol_standart_uchburchak",
-        name: "Mol go'shtli somsa",
-        attribute: "Standart Uchburchak",
-        attributeDesc: "An'anaviy go'shtli klassik somsa",
-        price: 8000,
-        imageSrc: "assets/mol_somsa_triangle.jpg"
-      },
-      {
-        id: "kartoshka_tortburchak",
-        name: "Kartoshkali somsa",
-        attribute: "To'rtburchak",
-        attributeDesc: "Mazzali kartoshkali to'rtburchak somsa",
-        price: 5000,
-        imageSrc: "assets/kartoshka_somsa.jpg"
-      }
+      { id: "qoy_katta_uchburchak", name: "Qo'y go'shtli somsa", attribute: "Katta Uchburchak", attributeDesc: "Tandirda pishgan qo'y go'shtli katta somsa", price: 20000, imageSrc: "assets/qoy_somsa.jpg", category: "somsa" },
+      { id: "mol_katta_oval", name: "Mol go'shtli somsa", attribute: "Katta Oval/Cho'ziq", attributeDesc: "Tandirda pishgan mol go'shtli katta somsa", price: 15000, imageSrc: "assets/mol_somsa_oval.jpg", category: "somsa" },
+      { id: "mol_orta_tomchi", name: "Mol go'shtli somsa", attribute: "O'rta Tomchi shakli", attributeDesc: "Tomchi shaklidagi nozik mayin go'shtli somsa", price: 10000, imageSrc: "assets/mol_somsa_drop.jpg", category: "somsa" },
+      { id: "mol_standart_uchburchak", name: "Mol go'shtli somsa", attribute: "Standart Uchburchak", attributeDesc: "An'anaviy go'shtli klassik somsa", price: 8000, imageSrc: "assets/mol_somsa_triangle.jpg", category: "somsa" },
+      { id: "kartoshka_tortburchak", name: "Kartoshkali somsa", attribute: "To'rtburchak", attributeDesc: "Mazzali kartoshkali to'rtburchak somsa", price: 5000, imageSrc: "assets/kartoshka_somsa.jpg", category: "somsa" },
+      { id: "shashlik_qiyma", name: "Shashlik Qiyma", attribute: "1 ta", attributeDesc: "Mazzali va sershira qiyma shashlik", price: 15000, imageSrc: "assets/shashlik_qiyma.jpg", category: "shashlik" },
+      { id: "shashlik_burda", name: "Shashlik Burda", attribute: "1 ta", attributeDesc: "Ko'mirda pishgan yumshoq go'shtli burda shashlik", price: 18000, imageSrc: "assets/shashlik_burda.jpg", category: "shashlik" },
+      { id: "choy_qora", name: "Qora choy", attribute: "Choynak", attributeDesc: "Issiqqina damlangan qora choy", price: 3000, imageSrc: "assets/choy.jpg", category: "ichimlik" },
+      { id: "choy_kok", name: "Ko'k choy", attribute: "Choynak", attributeDesc: "Issiqqina damlangan shifobaxsh ko'k choy", price: 3000, imageSrc: "assets/choy.jpg", category: "ichimlik" },
+      { id: "cola_05", name: "Coca-Cola 0.5L", attribute: "0.5 L", attributeDesc: "Salqinlantiruvchi Coca-Cola", price: 7000, imageSrc: "assets/cola.jpg", category: "ichimlik" },
+      { id: "cola_10", name: "Coca-Cola 1.0L", attribute: "1.0 L", attributeDesc: "Salqinlantiruvchi Coca-Cola", price: 11000, imageSrc: "assets/cola.jpg", category: "ichimlik" },
+      { id: "cola_15", name: "Coca-Cola 1.5L", attribute: "1.5 L", attributeDesc: "Salqinlantiruvchi Coca-Cola", price: 14000, imageSrc: "assets/cola.jpg", category: "ichimlik" },
+      { id: "pepsi_05", name: "Pepsi 0.5L", attribute: "0.5 L", attributeDesc: "Salqinlantiruvchi Pepsi", price: 7000, imageSrc: "assets/pepsi.jpg", category: "ichimlik" },
+      { id: "pepsi_10", name: "Pepsi 1.0L", attribute: "1.0 L", attributeDesc: "Salqinlantiruvchi Pepsi", price: 11000, imageSrc: "assets/pepsi.jpg", category: "ichimlik" },
+      { id: "pepsi_15", name: "Pepsi 1.5L", attribute: "1.5 L", attributeDesc: "Salqinlantiruvchi Pepsi", price: 14000, imageSrc: "assets/pepsi.jpg", category: "ichimlik" },
+      { id: "fanta_05", name: "Fanta 0.5L", attribute: "0.5 L", attributeDesc: "Salqinlantiruvchi Fanta", price: 7000, imageSrc: "assets/fanta.jpg", category: "ichimlik" },
+      { id: "fanta_10", name: "Fanta 1.0L", attribute: "1.0 L", attributeDesc: "Salqinlantiruvchi Fanta", price: 11000, imageSrc: "assets/fanta.jpg", category: "ichimlik" },
+      { id: "fanta_15", name: "Fanta 1.5L", attribute: "1.5 L", attributeDesc: "Salqinlantiruvchi Fanta", price: 14000, imageSrc: "assets/fanta.jpg", category: "ichimlik" },
+      { id: "non_patir", name: "Obi Non", attribute: "1 ta", attributeDesc: "Issiq tandir non", price: 3000, imageSrc: "assets/non.jpg", category: "qoshimcha" },
+      { id: "sous_tomat", name: "Tomat sous", attribute: "1 portsiya", attributeDesc: "Mazzali ziravorli tomat sousi", price: 2000, imageSrc: "assets/sous.jpg", category: "qoshimcha" },
+      { id: "qalampir_achchiq", name: "Achchiq qalampir", attribute: "1 ta", attributeDesc: "Tazalik beruvchi achchiq qalampir", price: 2000, imageSrc: "assets/qalampir.jpg", category: "qoshimcha" }
     ];
 
     function fetchProducts() {
@@ -1290,6 +1587,14 @@
     const LANG_STRINGS = {
       uz: {
         "brand-subtitle": "Eng mazali tandir somsalar",
+        "brand-open": "Ochiq • Qaynoq tandir",
+        "hero-status": "🔥 Tandir qizimoqda • Qaynoq taomlar",
+        "hero-title": "POLVON SOMSA & KABOB",
+        "hero-subtitle": "Tandirdan hozirgina uzilgan qarsildoq somsa va sershira shashliklar!",
+        "hero-tag-time": "⚡ 30-40 daqiqa",
+        "hero-tag-halal": "🥩 100% Halol go'sht",
+        "hero-tag-hot": "🥖 Issiq yetkazish",
+        "quick-cart-action": "Rasmiylashtirish",
         "nav-menu": "Menyu",
         "nav-cart": "Savatcha",
         "nav-profile": "Kabinet",
@@ -1328,6 +1633,14 @@
       },
       ru: {
         "brand-subtitle": "Вкуснейшая тандырная самса",
+        "brand-open": "Открыто • Горячий тандыр",
+        "hero-status": "🔥 Тандыр разогрет • Горячие блюда",
+        "hero-title": "ПОЛВОН САМСА & ШАШЛЫК",
+        "hero-subtitle": "Хрустящая тандырная самса и сочные шашлыки прямо с огня!",
+        "hero-tag-time": "⚡ 30-40 минут",
+        "hero-tag-halal": "🥩 100% Халяль",
+        "hero-tag-hot": "🥖 Горячая доставка",
+        "quick-cart-action": "Оформить",
         "nav-menu": "Меню",
         "nav-cart": "Корзина",
         "nav-profile": "Кабинет",
@@ -1365,6 +1678,10 @@
         "btn-add-label": "Добавить ➕"
       }
     };
+        "alert-order-fail": "Произошла ошибка при отправке заказа. Проверьте интернет-соединение.",
+        "btn-add-label": "Добавить ➕"
+      }
+    };
 
     let currentLanguage = 'uz';
     let selectedCategory = 'all';
@@ -1393,6 +1710,25 @@
       // Update texts
       const brandSub = document.getElementById("brand-subtitle");
       if (brandSub) brandSub.innerText = strings["brand-subtitle"];
+
+      const brandOpen = document.getElementById("lbl-brand-open");
+      if (brandOpen) brandOpen.innerText = strings["brand-open"];
+
+      const heroStatus = document.getElementById("lbl-hero-status");
+      if (heroStatus) heroStatus.innerText = strings["hero-status"];
+      const heroTitle = document.getElementById("lbl-hero-title");
+      if (heroTitle) heroTitle.innerText = strings["hero-title"];
+      const heroSub = document.getElementById("lbl-hero-sub");
+      if (heroSub) heroSub.innerText = strings["hero-subtitle"];
+      const heroTag1 = document.getElementById("lbl-hero-tag1");
+      if (heroTag1) heroTag1.innerText = strings["hero-tag-time"];
+      const heroTag2 = document.getElementById("lbl-hero-tag2");
+      if (heroTag2) heroTag2.innerText = strings["hero-tag-halal"];
+      const heroTag3 = document.getElementById("lbl-hero-tag3");
+      if (heroTag3) heroTag3.innerText = strings["hero-tag-hot"];
+
+      const quickAction = document.getElementById("lbl-quick-cart-action");
+      if (quickAction) quickAction.innerText = strings["quick-cart-action"];
       
       document.getElementById("lbl-nav-menu").innerText = strings["nav-menu"];
       document.getElementById("lbl-nav-cart").innerText = strings["nav-cart"];
@@ -1716,6 +2052,28 @@
           desc: product.attributeDesc
         };
         
+        let tasteBadge = "";
+        const cat = product.category || "somsa";
+        if (cat === "somsa") {
+          if (product.id === "qoy_katta_uchburchak") {
+            tasteBadge = currentLanguage === 'ru' ? "🔥 Хит продаж" : "🔥 Tandirdan qaynoq";
+          } else if (product.id === "mol_katta_oval") {
+            tasteBadge = currentLanguage === 'ru' ? "⭐ Сочная" : "⭐ Sershira go'sht";
+          } else if (product.id === "kartoshka_tortburchak") {
+            tasteBadge = currentLanguage === 'ru' ? "🥔 Аппетитная" : "🥔 Qarsildoq";
+          } else {
+            tasteBadge = currentLanguage === 'ru' ? "🥟 Тандырная" : "🥟 Tandir somsa";
+          }
+        } else if (cat === "shashlik") {
+          tasteBadge = currentLanguage === 'ru' ? "🍢 На углях" : "🍢 Ko'mirda pishgan";
+        } else if (cat === "ichimlik") {
+          tasteBadge = product.id.startsWith("choy") 
+            ? (currentLanguage === 'ru' ? "🫖 Ароматный" : "🫖 Xushbo'y choy")
+            : (currentLanguage === 'ru' ? "🧊 Освежающий" : "🧊 Muzdek salqin");
+        } else if (cat === "qoshimcha") {
+          tasteBadge = currentLanguage === 'ru' ? "🥖 Свежий" : "✨ Mazali";
+        }
+
         const card = document.createElement("div");
         card.className = "product-card";
         card.setAttribute("data-id", product.id);
@@ -1726,22 +2084,26 @@
               <span class="attribute-dot"></span>
               ${trans.attribute}
             </span>
+            ${tasteBadge ? `<span class="taste-badge">${tasteBadge}</span>` : ''}
             <img class="product-image" loading="lazy" src="${product.imageSrc}" alt="${trans.name}">
+            <div class="product-image-overlay"></div>
           </div>
           <div class="product-info">
             <div class="product-meta">
               <h3 class="product-title">${trans.name}</h3>
               <p class="product-attribute-text">${trans.desc}</p>
             </div>
-            <div class="product-action">
+            <div class="product-price-row">
               <span class="product-price">${formatPrice(product.price)}</span>
-              
+            </div>
+            <div class="product-action">
               <button class="btn-add" id="btn-add-${product.id}" style="display: ${qtyInCart > 0 ? 'none' : 'flex'};">
+                <svg style="width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2.5;" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                 ${strings["btn-add-label"]}
               </button>
               
               <div class="quantity-control ${qtyInCart > 0 ? 'active' : ''}" id="ctrl-${product.id}">
-                <button class="qty-btn minus" onclick="changeQuantity('${product.id}', -1)">-</button>
+                <button class="qty-btn minus" onclick="changeQuantity('${product.id}', -1)">−</button>
                 <span class="qty-val" id="qty-val-${product.id}">${qtyInCart}</span>
                 <button class="qty-btn plus" onclick="changeQuantity('${product.id}', 1)">+</button>
               </div>
@@ -1814,16 +2176,36 @@
 
     function updateCartBadge() {
       const badge = document.getElementById("cart-badge-count");
+      const quickCart = document.getElementById("floating-quick-cart");
+      const quickQty = document.getElementById("quick-cart-qty");
+      const quickItems = document.getElementById("lbl-quick-cart-items");
+      const quickTotal = document.getElementById("quick-cart-total");
+
       let totalItems = 0;
+      let totalPrice = 0;
       for (const id in state.cart) {
-        totalItems += state.cart[id];
+        const qty = state.cart[id];
+        totalItems += qty;
+        const p = PRODUCTS.find(prod => prod.id === id);
+        if (p) totalPrice += p.price * qty;
       }
       
       if (totalItems > 0) {
-        badge.innerText = totalItems;
-        badge.classList.add('active');
+        if (badge) {
+          badge.innerText = totalItems;
+          badge.classList.add('active');
+        }
+        if (quickCart) {
+          const isMenuTab = document.getElementById("tab-menu").classList.contains("active");
+          if (isMenuTab) quickCart.classList.add('active');
+          if (quickQty) quickQty.innerText = totalItems;
+          const itemsSuffix = currentLanguage === 'ru' ? "блюд выбрано" : "ta taom tanlandi";
+          if (quickItems) quickItems.innerText = `${totalItems} ${itemsSuffix}`;
+          if (quickTotal) quickTotal.innerText = formatPrice(totalPrice);
+        }
       } else {
-        badge.classList.remove('active');
+        if (badge) badge.classList.remove('active');
+        if (quickCart) quickCart.classList.remove('active');
       }
     }
 
@@ -2294,18 +2676,24 @@
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       
+      const quickCart = document.getElementById("floating-quick-cart");
+      let hasItems = Object.keys(state.cart).length > 0;
+
       if (tabName === 'menu') {
         document.getElementById("tab-menu").classList.add('active');
         document.getElementById("nav-btn-menu").classList.add('active');
+        if (quickCart && hasItems) quickCart.classList.add('active');
       } else if (tabName === 'cart') {
         renderCart();
         validateCheckoutForm();
         document.getElementById("tab-cart").classList.add('active');
         document.getElementById("nav-btn-cart").classList.add('active');
+        if (quickCart) quickCart.classList.remove('active');
       } else if (tabName === 'profile') {
         renderHistory();
         document.getElementById("tab-profile").classList.add('active');
         document.getElementById("nav-btn-profile").classList.add('active');
+        if (quickCart) quickCart.classList.remove('active');
       }
       
       window.scrollTo(0, 0);
