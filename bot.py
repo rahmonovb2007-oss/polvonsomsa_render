@@ -12,6 +12,7 @@ import http.server
 import socketserver
 import shutil
 import urllib.request
+import urllib.parse
 from telegram import Update, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, MenuButtonWebApp
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
@@ -397,49 +398,60 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=directory, **kwargs)
 
     def do_GET(self):
-        if self.path == "/api/orders":
+        parsed_url = urllib.parse.urlparse(self.path)
+        clean_path = parsed_url.path
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+
+        if clean_path == "/api/orders":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-cache")
             self.end_headers()
             orders = load_orders()
-            self.wfile.write(json.dumps(orders, ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/api/products":
+            req_user_id = query_params.get("user_id", [None])[0]
+            if req_user_id is not None and str(req_user_id).strip() not in ["", "0", "guest"]:
+                filtered_orders = [o for o in orders if str(o.get("user_id")) == str(req_user_id)]
+                self.wfile.write(json.dumps(filtered_orders, ensure_ascii=False).encode("utf-8"))
+            elif req_user_id in ["0", "guest"]:
+                self.wfile.write(json.dumps([], ensure_ascii=False).encode("utf-8"))
+            else:
+                self.wfile.write(json.dumps(orders, ensure_ascii=False).encode("utf-8"))
+        elif clean_path == "/api/products":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-cache")
             self.end_headers()
             products = load_products()
             self.wfile.write(json.dumps(products, ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/api/inventory":
+        elif clean_path == "/api/inventory":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-cache")
             self.end_headers()
             inventory = load_inventory()
             self.wfile.write(json.dumps(inventory, ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/api/financials":
+        elif clean_path == "/api/financials":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-cache")
             self.end_headers()
             financials = load_financials()
             self.wfile.write(json.dumps(financials, ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/api/users":
+        elif clean_path == "/api/users":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-cache")
             self.end_headers()
             users = load_users()
             self.wfile.write(json.dumps(users, ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/api/tandoors/config":
+        elif clean_path == "/api/tandoors/config":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-cache")
             self.end_headers()
             config = load_tandoor_config()
             self.wfile.write(json.dumps(config, ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/api/tandoors/logs":
+        elif clean_path == "/api/tandoors/logs":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-cache")
@@ -451,7 +463,10 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             super().do_GET()
 
     def do_POST(self):
-        if self.path == "/api/orders/update":
+        parsed_url = urllib.parse.urlparse(self.path)
+        clean_path = parsed_url.path
+
+        if clean_path == "/api/orders/update":
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length)
             try:
@@ -484,12 +499,19 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
-        elif self.path == "/api/orders/new":
+        elif clean_path == "/api/orders/new":
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length)
             try:
                 order = json.loads(post_data.decode("utf-8"))
                 
+                # Check for unique order ID to prevent collision & overwrite
+                all_orders = load_orders()
+                existing_ids = {o.get("id") for o in all_orders}
+                if not order.get("id") or order.get("id") in existing_ids:
+                    num_ids = [o.get("id") for o in all_orders if isinstance(o.get("id"), int)]
+                    order["id"] = (max(num_ids) + 1) if num_ids else 1001
+
                 # Save to database
                 save_order(order)
                 
@@ -504,9 +526,11 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 lat = order.get("latitude")
                 lng = order.get("longitude")
                 
-                # Load client language
+                # Load client language & persist preference
                 user_langs = load_user_languages()
-                lang = user_langs.get(str(user_id), "uz") if user_id else "uz"
+                lang = order.get("lang") or (user_langs.get(str(user_id)) if user_id else None) or "uz"
+                if user_id and order.get("lang"):
+                    save_user_language(user_id, order.get("lang"))
                 
                 # Format fulfillment text in user's language
                 if order_type == "saboy":
@@ -580,7 +604,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
-        elif self.path == "/api/products/update":
+        elif clean_path == "/api/products/update":
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length)
             try:
@@ -596,7 +620,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
-        elif self.path == "/api/inventory/update":
+        elif clean_path == "/api/inventory/update":
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length)
             try:
@@ -646,7 +670,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
-        elif self.path == "/api/inventory/convert":
+        elif clean_path == "/api/inventory/convert":
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length)
             try:
@@ -727,7 +751,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
-        elif self.path == "/api/inventory/waste":
+        elif clean_path == "/api/inventory/waste":
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length)
             try:
@@ -790,7 +814,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
-        elif self.path == "/api/financials/expense":
+        elif clean_path == "/api/financials/expense":
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length)
             try:

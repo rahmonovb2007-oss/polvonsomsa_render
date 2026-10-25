@@ -1583,6 +1583,56 @@
       }
     }
 
+    // --- MULTI-PROFILE ISOLATION & USER RESOLUTION HELPERS ---
+    function getUserId() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryUid = urlParams.get('user_id') || urlParams.get('uid');
+        if (queryUid) return String(queryUid).trim();
+
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+          return String(window.Telegram.WebApp.initDataUnsafe.user.id);
+        }
+      } catch (e) {
+        console.warn("Could not determine user id:", e);
+      }
+      return 'guest';
+    }
+
+    function getStorageKey(prefix) {
+      return `polvon_${prefix}_${getUserId()}`;
+    }
+
+    // Cleanup contaminated legacy global keys so no profile inherits another's state
+    try {
+      localStorage.removeItem('polvon_somsa_cart');
+      localStorage.removeItem('polvon_somsa_history');
+    } catch (e) {}
+
+    let activeSessionUserId = getUserId();
+
+    function checkUserSessionSwitch() {
+      const currentUid = getUserId();
+      if (currentUid !== activeSessionUserId) {
+        console.info(`Telegram profile switch detected: ${activeSessionUserId} -> ${currentUid}`);
+        activeSessionUserId = currentUid;
+        
+        loadCartFromStorage();
+        loadHistory();
+        initLanguage();
+        initUserProfile();
+        renderMenu();
+        updateCartBadge();
+        renderCart();
+      }
+    }
+
+    window.addEventListener('focus', checkUserSessionSwitch);
+    window.addEventListener('pageshow', checkUserSessionSwitch);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) checkUserSessionSwitch();
+    });
+
     // --- LANGUAGE LOCALIZATION ENGINE ---
     const LANG_STRINGS = {
       uz: {
@@ -1684,7 +1734,9 @@
 
     function changeLanguage(lang) {
       currentLanguage = lang;
-      localStorage.setItem('polvon_somsa_lang', lang);
+      try {
+        localStorage.setItem(getStorageKey('lang'), lang);
+      } catch (e) {}
       
       // Update language mini switcher buttons
       document.getElementById("btn-lang-uz").classList.toggle("active", lang === 'uz');
@@ -1809,8 +1861,11 @@
     }
 
     function initLanguage() {
-      // Load saved language or fall back to TG profile language
-      let savedLang = localStorage.getItem('polvon_somsa_lang');
+      // Load saved language for current user or fall back to TG profile language
+      let savedLang = null;
+      try {
+        savedLang = localStorage.getItem(getStorageKey('lang'));
+      } catch (e) {}
       if (!savedLang && tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
         const userLang = tg.initDataUnsafe.user.language_code;
         if (userLang === 'ru' || userLang === 'uz') {
@@ -2156,17 +2211,26 @@
     }, 30);
 
     function saveCartToStorage() {
-      localStorage.setItem('polvon_somsa_cart', JSON.stringify(state.cart));
+      try {
+        const key = getStorageKey('cart');
+        localStorage.setItem(key, JSON.stringify(state.cart));
+      } catch (e) {
+        console.error("Cart save error:", e);
+      }
     }
 
     function loadCartFromStorage() {
       try {
-        const saved = localStorage.getItem('polvon_somsa_cart');
+        const key = getStorageKey('cart');
+        const saved = localStorage.getItem(key);
         if (saved) {
           state.cart = JSON.parse(saved);
+        } else {
+          state.cart = {};
         }
       } catch (e) {
         console.error("Cart load error:", e);
+        state.cart = {};
       }
     }
 
@@ -2301,6 +2365,16 @@
         toggleContainer.classList.add('dostavka');
         deliverySelector.classList.add('show');
         tableSelector.classList.remove('show');
+        const addrInput = document.getElementById("input-delivery-address");
+        if (addrInput && !addrInput.value.trim()) {
+          try {
+            const savedAddr = localStorage.getItem(getStorageKey('address'));
+            if (savedAddr) {
+              addrInput.value = savedAddr;
+              state.address = savedAddr;
+            }
+          } catch (e) {}
+        }
       } else {
         tableSelector.classList.remove('show');
         deliverySelector.classList.remove('show');
@@ -2406,18 +2480,61 @@
     }
 
     function saveHistory() {
-      localStorage.setItem('polvon_somsa_history', JSON.stringify(state.orderHistory));
+      try {
+        const key = getStorageKey('history');
+        localStorage.setItem(key, JSON.stringify(state.orderHistory));
+      } catch (e) {
+        console.error("History save error:", e);
+      }
     }
 
     function loadHistory() {
       try {
-        const saved = localStorage.getItem('polvon_somsa_history');
+        const key = getStorageKey('history');
+        const saved = localStorage.getItem(key);
         if (saved) {
           state.orderHistory = JSON.parse(saved);
+        } else {
+          state.orderHistory = [];
         }
       } catch (e) {
         console.error("History load error:", e);
+        state.orderHistory = [];
       }
+      fetchUserOrdersFromServer();
+    }
+
+    function fetchUserOrdersFromServer() {
+      const uid = getUserId();
+      if (!uid || uid === 'guest') return;
+      
+      fetch(`/api/orders?user_id=${encodeURIComponent(uid)}`)
+        .then(res => res.ok ? res.json() : [])
+        .then(serverOrders => {
+          if (Array.isArray(serverOrders) && serverOrders.length > 0) {
+            let changed = false;
+            serverOrders.forEach(srvOrder => {
+              const localIdx = state.orderHistory.findIndex(o => o.id === srvOrder.id);
+              if (localIdx !== -1) {
+                if (state.orderHistory[localIdx].status !== srvOrder.status) {
+                  state.orderHistory[localIdx] = srvOrder;
+                  changed = true;
+                }
+              } else {
+                state.orderHistory.push(srvOrder);
+                changed = true;
+              }
+            });
+            if (changed) {
+              saveHistory();
+              const profileTab = document.getElementById("tab-profile");
+              if (profileTab && profileTab.classList.contains("active")) {
+                renderHistory();
+              }
+            }
+          }
+        })
+        .catch(err => console.warn("Could not sync orders from server:", err));
     }
 
     function renderHistory() {
@@ -2494,7 +2611,10 @@
           
         if (activeIds.length === 0) return;
         
-        fetch("/api/orders")
+        const uid = getUserId();
+        const url = (uid && uid !== 'guest') ? `/api/orders?user_id=${encodeURIComponent(uid)}` : "/api/orders";
+        
+        fetch(url)
           .then(res => {
             if (!res.ok) throw new Error();
             return res.json();
@@ -2578,10 +2698,11 @@
       });
       
       // Gather Telegram User details to attach
-      let userId = 0;
+      const uidStr = getUserId();
+      let userId = (uidStr !== 'guest' && !isNaN(Number(uidStr))) ? Number(uidStr) : 0;
       let userDisplayName = "Mehmon";
       if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        userId = tg.initDataUnsafe.user.id;
+        if (!userId) userId = tg.initDataUnsafe.user.id || 0;
         userDisplayName = [tg.initDataUnsafe.user.first_name, tg.initDataUnsafe.user.last_name].filter(Boolean).join(" ");
         if (tg.initDataUnsafe.user.username) {
           userDisplayName += ` (@${tg.initDataUnsafe.user.username})`;
@@ -2591,13 +2712,18 @@
       // Read address value in case type is dostavka
       if (state.orderType === 'dostavka') {
         state.address = document.getElementById("input-delivery-address").value.trim();
+        if (state.address) {
+          try {
+            localStorage.setItem(getStorageKey('address'), state.address);
+          } catch (e) {}
+        }
       } else {
         state.address = '';
         state.latitude = null;
         state.longitude = null;
       }
       
-      const orderId = Math.floor(1000 + Math.random() * 9000);
+      const orderId = Math.floor(100000 + Math.random() * 900000);
       const newOrder = {
         id: orderId,
         timestamp: Date.now(),
@@ -2629,7 +2755,8 @@
         return response.json();
       })
       .then(res => {
-        state.orderHistory.push(newOrder);
+        const finalOrder = (res && res.order) ? res.order : newOrder;
+        state.orderHistory.push(finalOrder);
         saveHistory();
         
         state.cart = {};
@@ -2645,7 +2772,7 @@
         state.longitude = null;
         
         const successMsg = strings["popup-order-success-msg"]
-          .replace("{orderId}", orderId)
+          .replace("{orderId}", finalOrder.id)
           .replace("{price}", formatPriceLocalized(totalPrice));
           
         if (tg) {
@@ -2697,15 +2824,15 @@
 
     // 8. EVENT BINDING & STARTUP
     document.addEventListener("DOMContentLoaded", () => {
+      initUserProfile();
+      initLanguage();
       loadCartFromStorage();
       loadHistory();
       
       renderMenu();
       fetchProducts();
-      initLanguage(); // Localization first!
       updateCartBadge();
       initTableNumbers();
-      initUserProfile();
       startRealStatusUpdates();
       
       document.getElementById("nav-btn-menu").addEventListener('click', () => switchTab('menu'));
